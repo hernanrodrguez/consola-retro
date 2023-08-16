@@ -27,7 +27,7 @@
 
 #include "max7219.h"
 #include "lcd1602_i2c.h"
-#include "debounce.h"
+#include "joystick.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -51,15 +51,7 @@ I2C_HandleTypeDef hi2c1;
 SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
-debounce_t deb_x_up_1;
-debounce_t deb_x_down_1;
-debounce_t deb_y_up_1;
-debounce_t deb_y_down_1;
 
-debounce_t deb_x_up_2;
-debounce_t deb_x_down_2;
-debounce_t deb_y_up_2;
-debounce_t deb_y_down_2;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -101,68 +93,65 @@ static void test_task(void *pvParameters){
 
 	int i=0, ii=0, iii=0, iiii=0;
 	char string[16];
+	uint8_t joystick;
+
+	init_joysticks();
 
 	while(1){
-		debounce_check(&deb_x_down_1, HAL_GPIO_ReadPin(EJE_X_DOWN_1_GPIO_Port, EJE_X_DOWN_1_Pin));
-		if(debounce_edge(&deb_x_down_1)){
+		joystick = read_joysticks();
+
+		if(joystick == JOYSTICK_1_RIGHT){
 			lcd_set_cursor(1, 0);
-			sprintf(string, "X DOWN %d", i);
+			sprintf(string, "RIGHT %d", i);
 			lcd_string(string);
 			i++;
 		}
 
-		debounce_check(&deb_x_down_2, HAL_GPIO_ReadPin(EJE_X_DOWN_2_GPIO_Port, EJE_X_DOWN_2_Pin));
-		if(debounce_edge(&deb_x_down_2)){
+		if(joystick == JOYSTICK_2_RIGHT){
 			lcd_set_cursor(1, 0);
-			sprintf(string, "X DOWN %d", i);
+			sprintf(string, "RIGHT %d", i);
 			lcd_string(string);
 			i++;
 		}
 
-		debounce_check(&deb_x_up_1, HAL_GPIO_ReadPin(EJE_X_UP_1_GPIO_Port, EJE_X_UP_1_Pin));
-		if(debounce_edge(&deb_x_up_1)){
+		if(joystick == JOYSTICK_1_LEFT){
 			lcd_set_cursor(2, 0);
-			sprintf(string, "X UP %d", ii);
+			sprintf(string, "LEFT %d", ii);
 			lcd_string(string);
 			ii++;
 		}
 
-		debounce_check(&deb_x_up_2, HAL_GPIO_ReadPin(EJE_X_UP_2_GPIO_Port, EJE_X_UP_2_Pin));
-		if(debounce_edge(&deb_x_up_2)){
+		if(joystick == JOYSTICK_2_LEFT){
 			lcd_set_cursor(2, 0);
-			sprintf(string, "X UP %d", ii);
+			sprintf(string, "LEFT %d", ii);
 			lcd_string(string);
 			ii++;
 		}
 
-		debounce_check(&deb_y_down_1, HAL_GPIO_ReadPin(EJE_Y_DOWN_1_GPIO_Port, EJE_Y_DOWN_1_Pin));
-		if(debounce_edge(&deb_y_down_1)){
+		if(joystick == JOYSTICK_1_UP){
 			lcd_set_cursor(3, 0);
-			sprintf(string, "Y DOWN %d", iii);
+			sprintf(string, "UP %d", iii);
 			lcd_string(string);
 			iii++;
 		}
 
-		debounce_check(&deb_y_down_2, HAL_GPIO_ReadPin(EJE_Y_DOWN_2_GPIO_Port, EJE_Y_DOWN_2_Pin));
-		if(debounce_edge(&deb_y_down_2)){
+		if(joystick == JOYSTICK_2_UP){
 			lcd_set_cursor(3, 0);
-			sprintf(string, "Y DOWN %d", iii);
+			sprintf(string, "UP %d", iii);
 			lcd_string(string);
 			iii++;
 		}
 
-		debounce_check(&deb_y_up_2, HAL_GPIO_ReadPin(EJE_Y_UP_2_GPIO_Port, EJE_Y_UP_2_Pin));
-		if(debounce_edge(&deb_y_up_2)){
+		if(joystick == JOYSTICK_1_DOWN){
 			lcd_set_cursor(4, 0);
-			sprintf(string, "Y UP %d", iiii);
+			sprintf(string, "DOWN %d", iiii);
 			lcd_string(string);
 			iiii++;
 		}
 
-		debounce_check(&deb_y_up_1, HAL_GPIO_ReadPin(EJE_Y_UP_1_GPIO_Port, EJE_Y_UP_1_Pin));
-		if(debounce_edge(&deb_y_up_1)){
+		if(joystick == JOYSTICK_2_DOWN){
 			lcd_set_cursor(4, 0);
-			sprintf(string, "Y UP %d", iiii);
+			sprintf(string, "DOWN %d", iiii);
 			lcd_string(string);
 			iiii++;
 		}
@@ -202,16 +191,6 @@ int main(void)
   MX_I2C1_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-
-  debounce_init(&deb_x_up_1, 1, DEBOUNCE_TICKS);
-  debounce_init(&deb_x_down_1, 1, DEBOUNCE_TICKS);
-  debounce_init(&deb_y_up_1, 1, DEBOUNCE_TICKS);
-  debounce_init(&deb_y_down_1, 1, DEBOUNCE_TICKS);
-
-  debounce_init(&deb_x_up_2, 1, DEBOUNCE_TICKS);
-  debounce_init(&deb_x_down_2, 1, DEBOUNCE_TICKS);
-  debounce_init(&deb_y_up_2, 1, DEBOUNCE_TICKS);
-  debounce_init(&deb_y_down_2, 1, DEBOUNCE_TICKS);
 
   lcd_init(&hi2c1);
 
