@@ -91,7 +91,7 @@ static void led_task(void *pvParameters){
 
 static void test_task(void *pvParameters){
 
-	int i=0, ii=0, iii=0, iiii=0;
+	int i=0, ii=0, iii=0, iiii=0, iiiii=0;
 	char string[16];
 	uint8_t joystick;
 
@@ -154,6 +154,20 @@ static void test_task(void *pvParameters){
 			sprintf(string, "DOWN %d", iiii);
 			lcd_string(string);
 			iiii++;
+		}
+
+		if(joystick == JOYSTICK_1_PULS){
+			lcd_set_cursor(1, 10);
+			sprintf(string, "PULS %d", iiiii);
+			lcd_string(string);
+			iiiii++;
+		}
+
+		if(joystick == JOYSTICK_2_PULS){
+			lcd_set_cursor(1, 10);
+			sprintf(string, "PULS %d", iiiii);
+			lcd_string(string);
+			iiiii++;
 		}
 	}
 }

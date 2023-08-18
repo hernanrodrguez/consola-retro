@@ -12,6 +12,9 @@
 
 #define NONE 				0
 
+#define JOYSTICK_1			0
+#define JOYSTICK_2			1
+
 #define JOYSTICK_1_RIGHT 	1
 #define JOYSTICK_1_LEFT 	2
 #define JOYSTICK_1_UP 		3
@@ -23,6 +26,7 @@
 #define JOYSTICK_2_UP 		8
 #define JOYSTICK_2_DOWN 	9
 #define JOYSTICK_2_PULS		10
+
 
 void init_joysticks(void);
 uint8_t read_joysticks(void);
