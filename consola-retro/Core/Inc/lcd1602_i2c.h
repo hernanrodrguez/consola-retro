@@ -57,6 +57,10 @@
 #define MAX_LINES      2
 #define MAX_CHARS      16
 
+#define PRINT_DELAY 	20
+#define ONE_LINE		0
+#define FOUR_LINES		1
+
 #ifdef STM32F103xB
 #define i2c_transmit_byte(i2c, addr, val)	HAL_I2C_Master_Transmit(i2c, (addr << 1), &val, 1, 100)
 // Prototipo para inicializar LCD
@@ -74,6 +78,7 @@ void lcd_send_byte(uint8_t val, int mode);
 void lcd_clear(void);
 void lcd_set_cursor(int line, int position);
 void lcd_string(const char *s);
+uint8_t lcd_progressive_print(const char *line_0, const char *line_1, const char *line_2, const char *line_3, uint8_t mode);
 
 static void inline lcd_char(char val) {
     lcd_send_byte(val, LCD_CHARACTER);

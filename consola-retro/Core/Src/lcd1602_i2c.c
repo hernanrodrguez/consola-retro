@@ -66,8 +66,85 @@ void lcd_set_cursor(int line, int position) {
 			break;
 	}
 	lcd_send_byte(val, LCD_COMMAND);
-    //int val = (line == 0) ? 0x80 + position : 0xC0 + position;
-    //lcd_send_byte(val, LCD_COMMAND);
+}
+
+uint8_t lcd_progressive_print(const char *line_0, const char *line_1, const char *line_2, const char *line_3, uint8_t mode){
+
+	typedef enum {
+		WAIT,
+		PRINT
+	} state_print_t;
+
+	static uint8_t i=0, j=0;
+	static uint32_t start_ticks;
+	static state_print_t state_print = PRINT;
+
+	switch(state_print){
+
+	case WAIT:
+		if(HAL_GetTick() - start_ticks > PRINT_DELAY){
+			state_print = PRINT;
+		}
+		break;
+
+	case PRINT:
+
+		if(mode){
+			lcd_set_cursor(0, j);
+			lcd_char(*(line_0+j));
+
+			lcd_set_cursor(1, j);
+			lcd_char(*(line_1+j));
+
+			lcd_set_cursor(2, j);
+			lcd_char(*(line_2+j));
+
+			lcd_set_cursor(3, j);
+			lcd_char(*(line_3+j));
+
+			j++;
+			if(j>19){
+				j=0;
+				return 1;
+			}
+		} else {
+			lcd_set_cursor(i, j);
+
+			switch(i){
+			case 0:
+				lcd_char(*(line_0+j));
+				break;
+			case 1:
+				lcd_char(*(line_1+j));
+				break;
+			case 2:
+				lcd_char(*(line_2+j));
+				break;
+			case 3:
+				lcd_char(*(line_3+j));
+				break;
+			default:
+				j=0;
+				i=0;
+				break;
+			}
+
+			j++;
+			if(j>19){
+				j=0;
+				i++;
+				if(i>3){
+					i=0;
+					return 1;
+				}
+			}
+		}
+		start_ticks = HAL_GetTick();
+		state_print = WAIT;
+		break;
+	}
+
+	return 0;
 }
 
 void lcd_string(const char *s) {

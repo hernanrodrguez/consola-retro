@@ -65,7 +65,31 @@ static void MX_SPI1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/*
+static void main_task(void *pvParameters){
 
+	typedef enum {
+		STATE_WELCOME,
+		STATE_DELAY,
+		STATE_MENU,
+		STATE_GAME_0,
+		STATE_GAME_1,
+		STATE_GAME_2,
+		STATE_GAME_3
+	} main_state_t;
+
+	static main_state_t main_state = STATE_WELCOME;
+	static uint32_t start_ticks, delay_ticks;
+
+	while(1){
+		switch(state){
+		case STATE_WELCOME:
+
+			break;
+		}
+	}
+}
+*/
 static void led_task(void *pvParameters){
 	uint8_t matrix[8];
 
@@ -98,7 +122,14 @@ static void test_task(void *pvParameters){
 	init_joysticks();
 
 	while(1){
-		joystick = read_joysticks();
+		if(lcd_progressive_print("123456789ABCDEFGHIJK",
+								 "123456789ABCDEFGHIJK",
+								 "123456789ABCDEFGHIJK",
+								 "123456789ABCDEFGHIJK",
+								 ONE_LINE)){
+			lcd_clear();
+		}
+		/*joystick = read_joysticks();
 
 		if(joystick == JOYSTICK_1_RIGHT){
 			lcd_set_cursor(1, 0);
@@ -168,7 +199,7 @@ static void test_task(void *pvParameters){
 			sprintf(string, "PULS %d", iiiii);
 			lcd_string(string);
 			iiiii++;
-		}
+		}*/
 	}
 }
 
