@@ -57,7 +57,7 @@
 #define MAX_LINES      2
 #define MAX_CHARS      16
 
-#define PRINT_DELAY_LINES 	20
+#define PRINT_DELAY_LINES 	10
 #define PRINT_DELAY_RING 	50
 
 
@@ -87,6 +87,7 @@ void lcd_clear(void);
 void lcd_set_cursor(int line, int position);
 void lcd_string(const char *s);
 uint8_t lcd_progressive_print(const char *line_0, const char *line_1, const char *line_2, const char *line_3, uint8_t mode);
+uint8_t lcd_progressive_clear(uint8_t mode);
 void lcd_print_ring(void);
 
 static void inline lcd_char(char val) {

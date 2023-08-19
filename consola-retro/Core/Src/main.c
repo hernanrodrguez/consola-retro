@@ -24,10 +24,12 @@
 /* USER CODE BEGIN Includes */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
 
 #include "max7219.h"
 #include "lcd1602_i2c.h"
 #include "joystick.h"
+#include "menu.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -52,6 +54,8 @@ SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
 
+QueueHandle_t joysticks_queue;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,21 +73,24 @@ static void MX_SPI1_Init(void);
 static void main_task(void *pvParameters){
 
 	typedef enum {
-		STATE_WELCOME,
-		STATE_DELAY,
-		STATE_MENU,
+		STATE_WELCOME_SHOW,
+		STATE_WELCOME_DELAY,
+		STATE_WELCOME_CLEAR,
+		STATE_MENU_SHOW,
+		STATE_MENU_HANDLE,
 		STATE_GAME_0,
 		STATE_GAME_1,
 		STATE_GAME_2,
 		STATE_GAME_3
 	} main_state_t;
 
-	static main_state_t main_state = STATE_WELCOME;
+	static main_state_t main_state = STATE_WELCOME_SHOW;
 	static uint32_t start_ticks, delay_ticks;
+	static uint8_t joystick;
 
 	while(1){
 		switch(main_state){
-		case STATE_WELCOME:
+		case STATE_WELCOME_SHOW:
 			if(lcd_progressive_print("                    ",
 									 " CONSOLA DE JUEGOS  ",
 									 "       RETRO        ",
@@ -91,21 +98,71 @@ static void main_task(void *pvParameters){
 									 FOUR_LINES)){
 				delay_ticks = 3000;
 				start_ticks = HAL_GetTick();
-				main_state = STATE_DELAY;
+				main_state = STATE_WELCOME_DELAY;
 			}
 			break;
-		case STATE_DELAY:
+		case STATE_WELCOME_DELAY:
 			if(HAL_GetTick() - start_ticks > delay_ticks){
-				main_state = STATE_MENU;
+				main_state = STATE_WELCOME_CLEAR;
 			}
 			break;
-		case STATE_MENU:
+		case STATE_WELCOME_CLEAR:
+			if(lcd_progressive_clear(FOUR_LINES)){
+				main_state = STATE_MENU_SHOW;
+			}
+			break;
+		case STATE_MENU_SHOW:
 			if(lcd_progressive_print("   MENU PRINCIPAL   ",
-									 "Seleccione un juego ",
+									 "Seleccione un juego:",
 									 "  Pong      Tetris  ",
 									 "  Snake     Space   ",
 									 FOUR_LINES)){
+				start_ticks = HAL_GetTick();
 				main_state = STATE_GAME_0;
+			}
+			break;
+		case STATE_GAME_0:
+			menu_blink(0, "  Pong    ");
+			if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+				menu_blink_option(0, "  Pong    ");
+				if(joystick == JOYSTICK_1_RIGHT){
+					main_state = STATE_GAME_1;
+				} else if(joystick == JOYSTICK_1_DOWN){
+					main_state = STATE_GAME_2;
+				}
+			}
+			break;
+		case STATE_GAME_1:
+			menu_blink(1, "  Tetris  ");
+			if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+				menu_blink_option(1, "  Tetris  ");
+				if(joystick == JOYSTICK_1_LEFT){
+					main_state = STATE_GAME_0;
+				} else if(joystick == JOYSTICK_1_DOWN){
+					main_state = STATE_GAME_3;
+				}
+			}
+			break;
+		case STATE_GAME_2:
+			menu_blink(2, "  Snake   ");
+			if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+				menu_blink_option(2, "  Snake   ");
+				if(joystick == JOYSTICK_1_RIGHT){
+					main_state = STATE_GAME_3;
+				} else if(joystick == JOYSTICK_1_UP){
+					main_state = STATE_GAME_0;
+				}
+			}
+			break;
+		case STATE_GAME_3:
+			menu_blink(3, "  Space   ");
+			if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+				menu_blink_option(3, "  Space   ");
+				if(joystick == JOYSTICK_1_LEFT){
+					main_state = STATE_GAME_2;
+				} else if(joystick == JOYSTICK_1_UP){
+					main_state = STATE_GAME_1;
+				}
 			}
 			break;
 		}
@@ -135,94 +192,17 @@ static void led_task(void *pvParameters){
 	}
 }
 */
-static void test_task(void *pvParameters){
+static void joysticks_task(void *pvParameters){
 
-	int i=0, ii=0, iii=0, iiii=0, iiiii=0;
-	char string[16];
 	uint8_t joystick;
 
 	init_joysticks();
 
 	while(1){
-		/*if(lcd_progressive_print("123456789ABCDEFGHIJK",
-								 "123456789ABCDEFGHIJK",
-								 "123456789ABCDEFGHIJK",
-								 "123456789ABCDEFGHIJK",
-								 ONE_LINE)){
-			lcd_clear();
-		}*/
-		lcd_print_ring();
-		/*joystick = read_joysticks();
-
-		if(joystick == JOYSTICK_1_RIGHT){
-			lcd_set_cursor(1, 0);
-			sprintf(string, "RIGHT %d", i);
-			lcd_string(string);
-			i++;
+		joystick = read_joysticks();
+		if(joystick != NONE){
+			xQueueSendToBack(joysticks_queue, &joystick, portMAX_DELAY);
 		}
-
-		if(joystick == JOYSTICK_2_RIGHT){
-			lcd_set_cursor(1, 0);
-			sprintf(string, "RIGHT %d", i);
-			lcd_string(string);
-			i++;
-		}
-
-		if(joystick == JOYSTICK_1_LEFT){
-			lcd_set_cursor(2, 0);
-			sprintf(string, "LEFT %d", ii);
-			lcd_string(string);
-			ii++;
-		}
-
-		if(joystick == JOYSTICK_2_LEFT){
-			lcd_set_cursor(2, 0);
-			sprintf(string, "LEFT %d", ii);
-			lcd_string(string);
-			ii++;
-		}
-
-		if(joystick == JOYSTICK_1_UP){
-			lcd_set_cursor(3, 0);
-			sprintf(string, "UP %d", iii);
-			lcd_string(string);
-			iii++;
-		}
-
-		if(joystick == JOYSTICK_2_UP){
-			lcd_set_cursor(3, 0);
-			sprintf(string, "UP %d", iii);
-			lcd_string(string);
-			iii++;
-		}
-
-		if(joystick == JOYSTICK_1_DOWN){
-			lcd_set_cursor(4, 0);
-			sprintf(string, "DOWN %d", iiii);
-			lcd_string(string);
-			iiii++;
-		}
-
-		if(joystick == JOYSTICK_2_DOWN){
-			lcd_set_cursor(4, 0);
-			sprintf(string, "DOWN %d", iiii);
-			lcd_string(string);
-			iiii++;
-		}
-
-		if(joystick == JOYSTICK_1_PULS){
-			lcd_set_cursor(1, 10);
-			sprintf(string, "PULS %d", iiiii);
-			lcd_string(string);
-			iiiii++;
-		}
-
-		if(joystick == JOYSTICK_2_PULS){
-			lcd_set_cursor(1, 10);
-			sprintf(string, "PULS %d", iiiii);
-			lcd_string(string);
-			iiiii++;
-		}*/
 	}
 }
 
@@ -260,6 +240,8 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
+  joysticks_queue = xQueueCreate(1, sizeof(uint8_t));
+
   lcd_init(&hi2c1);
 
   xTaskCreate(main_task,
@@ -269,12 +251,12 @@ int main(void)
 			  1,
 			  NULL);
 
-  /*xTaskCreate(led_task,
-			  "led_task",
+  xTaskCreate(joysticks_task,
+			  "joysticks_task",
 			  configMINIMAL_STACK_SIZE,
 			  NULL,
 			  1,
-			  NULL);*/
+			  NULL);
 
   vTaskStartScheduler();
 

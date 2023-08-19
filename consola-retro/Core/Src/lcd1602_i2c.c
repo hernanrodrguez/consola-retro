@@ -68,6 +68,14 @@ void lcd_set_cursor(int line, int position) {
 	lcd_send_byte(val, LCD_COMMAND);
 }
 
+uint8_t lcd_progressive_clear(uint8_t mode){
+	return (lcd_progressive_print("                    ",
+								  "                    ",
+								  "                    ",
+								  "                    ",
+								  mode));
+}
+
 uint8_t lcd_progressive_print(const char *line_0, const char *line_1, const char *line_2, const char *line_3, uint8_t mode){
 
 	static uint8_t i=0, j=0;
