@@ -65,7 +65,7 @@ static void MX_SPI1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-/*
+
 static void main_task(void *pvParameters){
 
 	typedef enum {
@@ -82,13 +82,35 @@ static void main_task(void *pvParameters){
 	static uint32_t start_ticks, delay_ticks;
 
 	while(1){
-		switch(state){
+		switch(main_state){
 		case STATE_WELCOME:
-			if(lcd_progressive_print())
+			if(lcd_progressive_print("                    ",
+									 " CONSOLA DE JUEGOS  ",
+									 "       RETRO        ",
+									 "                    ",
+									 FOUR_LINES)){
+				delay_ticks = 3000;
+				start_ticks = HAL_GetTick();
+				main_state = STATE_DELAY;
+			}
+			break;
+		case STATE_DELAY:
+			if(HAL_GetTick() - start_ticks > delay_ticks){
+				main_state = STATE_MENU;
+			}
+			break;
+		case STATE_MENU:
+			if(lcd_progressive_print("   MENU PRINCIPAL   ",
+									 "Seleccione un juego ",
+									 "  Pong      Tetris  ",
+									 "  Snake     Space   ",
+									 FOUR_LINES)){
+				main_state = STATE_GAME_0;
+			}
 			break;
 		}
 	}
-}*/
+}
 /*
 static void led_task(void *pvParameters){
 	uint8_t matrix[8];
@@ -240,8 +262,8 @@ int main(void)
 
   lcd_init(&hi2c1);
 
-  xTaskCreate(test_task,
-			  "test_task",
+  xTaskCreate(main_task,
+			  "main_task",
 			  configMINIMAL_STACK_SIZE,
 			  NULL,
 			  1,
