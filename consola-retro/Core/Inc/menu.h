@@ -13,6 +13,7 @@
 #define BLINK_RATE 300
 
 uint8_t menu_handle(void);
+uint8_t menu_game_handle(void);
 void menu_blink(uint8_t option, const char *text);
 void menu_blink_option(uint8_t option, const char *text);
 

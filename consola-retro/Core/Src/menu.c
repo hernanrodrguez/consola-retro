@@ -15,6 +15,78 @@
 
 extern QueueHandle_t joysticks_queue;
 
+uint8_t menu_game_handle(void){
+	typedef enum{
+		STATE_PLAY,
+		STATE_RULES,
+		STATE_SCORE,
+		STATE_BACK
+	}menu_game_state_t;
+
+	uint8_t joystick;
+	static menu_game_state_t menu_game_state = STATE_PLAY;
+
+	switch(menu_game_state){
+	case STATE_PLAY:
+		menu_blink(0, "  Jugar   ");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			menu_blink_option(0, "  Jugar   ");
+			if(joystick == JOYSTICK_1_PULS){
+				menu_game_state = STATE_PLAY;
+				return STATE_PLAY+1;
+			} else if(joystick == JOYSTICK_1_RIGHT){
+				menu_game_state = STATE_RULES;
+			} else if(joystick == JOYSTICK_1_DOWN){
+				menu_game_state = STATE_SCORE;
+			}
+		}
+		break;
+	case STATE_RULES:
+		menu_blink(1, "  Reglas  ");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			menu_blink_option(1, "  Reglas  ");
+			if(joystick == JOYSTICK_1_PULS){
+				menu_game_state = STATE_PLAY;
+				return STATE_RULES+1;
+			} else if(joystick == JOYSTICK_1_LEFT){
+				menu_game_state = STATE_PLAY;
+			} else if(joystick == JOYSTICK_1_DOWN){
+				menu_game_state = STATE_BACK;
+			}
+		}
+		break;
+	case STATE_SCORE:
+		menu_blink(2, "  Puntajes");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			menu_blink_option(2, "  Puntajes");
+			if(joystick == JOYSTICK_1_PULS){
+				menu_game_state = STATE_PLAY;
+				return STATE_SCORE+1;
+			} else if(joystick == JOYSTICK_1_RIGHT){
+				menu_game_state = STATE_BACK;
+			} else if(joystick == JOYSTICK_1_UP){
+				menu_game_state = STATE_PLAY;
+			}
+		}
+		break;
+	case STATE_BACK:
+		menu_blink(3, "  Volver  ");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			menu_blink_option(3, "  Volver  ");
+			if(joystick == JOYSTICK_1_PULS){
+				menu_game_state = STATE_PLAY;
+				return STATE_BACK+1;
+			} else if(joystick == JOYSTICK_1_LEFT){
+				menu_game_state = STATE_SCORE;
+			} else if(joystick == JOYSTICK_1_UP){
+				menu_game_state = STATE_RULES;
+			}
+		}
+		break;
+	}
+	return 0;
+}
+
 uint8_t menu_handle(void){
 	typedef enum{
 		STATE_GAME_0,
@@ -87,6 +159,8 @@ uint8_t menu_handle(void){
 
 	return 0;
 }
+
+
 
 void menu_blink_option(uint8_t option, const char *text){
 	uint8_t i, j;

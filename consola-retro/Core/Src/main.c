@@ -79,10 +79,14 @@ static void main_task(void *pvParameters){
 		STATE_MENU_SHOW,
 		STATE_MENU_HANDLE,
 		STATE_MENU_CLEAR,
-		STATE_GAME_0,
-		STATE_GAME_1,
-		STATE_GAME_2,
-		STATE_GAME_3,
+		STATE_GAME_0_SHOW,
+		STATE_GAME_0_HANDLE,
+		STATE_GAME_1_SHOW,
+		STATE_GAME_1_HANDLE,
+		STATE_GAME_2_SHOW,
+		STATE_GAME_2_HANDLE,
+		STATE_GAME_3_SHOW,
+		STATE_GAME_3_HANDLE,
 		TEST_DIE
 	} main_state_t;
 
@@ -126,61 +130,101 @@ static void main_task(void *pvParameters){
 			switch(menu_handle()){
 			case 1:
 				main_state = STATE_MENU_CLEAR;
-				next_state = STATE_GAME_0;
+				next_state = STATE_GAME_0_SHOW;
 				break;
 			case 2:
 				main_state = STATE_MENU_CLEAR;
-				next_state = STATE_GAME_1;
+				next_state = STATE_GAME_1_SHOW;
 				break;
 			case 3:
 				main_state = STATE_MENU_CLEAR;
-				next_state = STATE_GAME_2;
+				next_state = STATE_GAME_2_SHOW;
 				break;
 			case 4:
 				main_state = STATE_MENU_CLEAR;
-				next_state = STATE_GAME_3;
+				next_state = STATE_GAME_3_SHOW;
 				break;
 			}
 			break;
 		case STATE_MENU_CLEAR:
-				if(lcd_progressive_clear(FOUR_LINES)){
-					main_state = next_state;
-				}
+			if(lcd_progressive_clear(FOUR_LINES)){
+				main_state = next_state;
+			}
+			break;
+		case STATE_GAME_0_SHOW:
+			if(lcd_progressive_print("        PONG        ",
+									 "Instrucciones del ju",
+									 " Jugar      Reglas  ",
+									 " Puntajes   Volver  ",
+									 FOUR_LINES)){
+				main_state = STATE_GAME_0_HANDLE;
+			}
+			break;
+		case STATE_GAME_0_HANDLE:
+			switch(menu_game_handle()){ // por ahora vuelvo en todos los casos...
+			case 1: // jugar
+			case 2: // reglas
+			case 3: // puntajes
+			case 4: // volver
+				main_state = TEST_DIE;
 				break;
-		case STATE_GAME_0:
-			if(lcd_progressive_print("                    ",
-									 "    STATE GAME 0    ",
-									 "                    ",
-									 "                    ",
-									 FOUR_LINES)){
-				main_state = TEST_DIE;
 			}
 			break;
-		case STATE_GAME_1:
-			if(lcd_progressive_print("                    ",
-									 "    STATE GAME 1    ",
-									 "                    ",
-									 "                    ",
+		case STATE_GAME_1_SHOW:
+			if(lcd_progressive_print("       TETRIS       ",
+									 "Instrucciones del ju",
+									 " Jugar      Reglas  ",
+									 " Puntajes   Volver  ",
 									 FOUR_LINES)){
-				main_state = TEST_DIE;
+				main_state = STATE_GAME_1_HANDLE;
 			}
 			break;
-		case STATE_GAME_2:
-			if(lcd_progressive_print("                    ",
-									 "    STATE GAME 2    ",
-									 "                    ",
-									 "                    ",
-									 FOUR_LINES)){
+		case STATE_GAME_1_HANDLE:
+			switch(menu_game_handle()){ // por ahora vuelvo en todos los casos...
+			case 1: // jugar
+			case 2: // reglas
+			case 3: // puntajes
+			case 4: // volver
 				main_state = TEST_DIE;
+				break;
 			}
 			break;
-		case STATE_GAME_3:
-			if(lcd_progressive_print("                    ",
-									 "    STATE GAME 3    ",
-									 "                    ",
-									 "                    ",
+		case STATE_GAME_2_SHOW:
+			if(lcd_progressive_print("       SNAKE        ",
+									 "Instrucciones del ju",
+									 " Jugar      Reglas  ",
+									 " Puntajes   Volver  ",
 									 FOUR_LINES)){
+				main_state = STATE_GAME_2_HANDLE;
+			}
+			break;
+		case STATE_GAME_2_HANDLE:
+			switch(menu_game_handle()){ // por ahora vuelvo en todos los casos...
+			case 1: // jugar
+			case 2: // reglas
+			case 3: // puntajes
+			case 4: // volver
 				main_state = TEST_DIE;
+				break;
+			}
+			break;
+		case STATE_GAME_3_SHOW:
+			if(lcd_progressive_print("       SPACE        ",
+									 "Instrucciones del ju",
+									 " Jugar      Reglas  ",
+									 " Puntajes   Volver  ",
+									 FOUR_LINES)){
+				main_state = STATE_GAME_3_HANDLE;
+			}
+			break;
+		case STATE_GAME_3_HANDLE:
+			switch(menu_game_handle()){ // por ahora vuelvo en todos los casos...
+			case 1: // jugar
+			case 2: // reglas
+			case 3: // puntajes
+			case 4: // volver
+				main_state = TEST_DIE;
+				break;
 			}
 			break;
 		case TEST_DIE:
