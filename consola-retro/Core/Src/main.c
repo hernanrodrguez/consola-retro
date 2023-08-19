@@ -84,12 +84,12 @@ static void main_task(void *pvParameters){
 	while(1){
 		switch(state){
 		case STATE_WELCOME:
-
+			if(lcd_progressive_print())
 			break;
 		}
 	}
-}
-*/
+}*/
+/*
 static void led_task(void *pvParameters){
 	uint8_t matrix[8];
 
@@ -112,7 +112,7 @@ static void led_task(void *pvParameters){
 		vTaskDelay(1000/portTICK_PERIOD_MS);
 	}
 }
-
+*/
 static void test_task(void *pvParameters){
 
 	int i=0, ii=0, iii=0, iiii=0, iiiii=0;
@@ -122,13 +122,14 @@ static void test_task(void *pvParameters){
 	init_joysticks();
 
 	while(1){
-		if(lcd_progressive_print("123456789ABCDEFGHIJK",
+		/*if(lcd_progressive_print("123456789ABCDEFGHIJK",
 								 "123456789ABCDEFGHIJK",
 								 "123456789ABCDEFGHIJK",
 								 "123456789ABCDEFGHIJK",
 								 ONE_LINE)){
 			lcd_clear();
-		}
+		}*/
+		lcd_print_ring();
 		/*joystick = read_joysticks();
 
 		if(joystick == JOYSTICK_1_RIGHT){
