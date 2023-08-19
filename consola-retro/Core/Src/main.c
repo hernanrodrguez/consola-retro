@@ -78,15 +78,17 @@ static void main_task(void *pvParameters){
 		STATE_WELCOME_CLEAR,
 		STATE_MENU_SHOW,
 		STATE_MENU_HANDLE,
+		STATE_MENU_CLEAR,
 		STATE_GAME_0,
 		STATE_GAME_1,
 		STATE_GAME_2,
-		STATE_GAME_3
+		STATE_GAME_3,
+		TEST_DIE
 	} main_state_t;
 
 	static main_state_t main_state = STATE_WELCOME_SHOW;
+	static main_state_t next_state;
 	static uint32_t start_ticks, delay_ticks;
-	static uint8_t joystick;
 
 	while(1){
 		switch(main_state){
@@ -117,52 +119,73 @@ static void main_task(void *pvParameters){
 									 "  Pong      Tetris  ",
 									 "  Snake     Space   ",
 									 FOUR_LINES)){
-				start_ticks = HAL_GetTick();
-				main_state = STATE_GAME_0;
+				main_state = STATE_MENU_HANDLE;
 			}
 			break;
-		case STATE_GAME_0:
-			menu_blink(0, "  Pong    ");
-			if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
-				menu_blink_option(0, "  Pong    ");
-				if(joystick == JOYSTICK_1_RIGHT){
-					main_state = STATE_GAME_1;
-				} else if(joystick == JOYSTICK_1_DOWN){
-					main_state = STATE_GAME_2;
+		case STATE_MENU_HANDLE:
+			switch(menu_handle()){
+			case 1:
+				main_state = STATE_MENU_CLEAR;
+				next_state = STATE_GAME_0;
+				break;
+			case 2:
+				main_state = STATE_MENU_CLEAR;
+				next_state = STATE_GAME_1;
+				break;
+			case 3:
+				main_state = STATE_MENU_CLEAR;
+				next_state = STATE_GAME_2;
+				break;
+			case 4:
+				main_state = STATE_MENU_CLEAR;
+				next_state = STATE_GAME_3;
+				break;
+			}
+			break;
+		case STATE_MENU_CLEAR:
+				if(lcd_progressive_clear(FOUR_LINES)){
+					main_state = next_state;
 				}
+				break;
+		case STATE_GAME_0:
+			if(lcd_progressive_print("                    ",
+									 "    STATE GAME 0    ",
+									 "                    ",
+									 "                    ",
+									 FOUR_LINES)){
+				main_state = TEST_DIE;
 			}
 			break;
 		case STATE_GAME_1:
-			menu_blink(1, "  Tetris  ");
-			if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
-				menu_blink_option(1, "  Tetris  ");
-				if(joystick == JOYSTICK_1_LEFT){
-					main_state = STATE_GAME_0;
-				} else if(joystick == JOYSTICK_1_DOWN){
-					main_state = STATE_GAME_3;
-				}
+			if(lcd_progressive_print("                    ",
+									 "    STATE GAME 1    ",
+									 "                    ",
+									 "                    ",
+									 FOUR_LINES)){
+				main_state = TEST_DIE;
 			}
 			break;
 		case STATE_GAME_2:
-			menu_blink(2, "  Snake   ");
-			if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
-				menu_blink_option(2, "  Snake   ");
-				if(joystick == JOYSTICK_1_RIGHT){
-					main_state = STATE_GAME_3;
-				} else if(joystick == JOYSTICK_1_UP){
-					main_state = STATE_GAME_0;
-				}
+			if(lcd_progressive_print("                    ",
+									 "    STATE GAME 2    ",
+									 "                    ",
+									 "                    ",
+									 FOUR_LINES)){
+				main_state = TEST_DIE;
 			}
 			break;
 		case STATE_GAME_3:
-			menu_blink(3, "  Space   ");
-			if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
-				menu_blink_option(3, "  Space   ");
-				if(joystick == JOYSTICK_1_LEFT){
-					main_state = STATE_GAME_2;
-				} else if(joystick == JOYSTICK_1_UP){
-					main_state = STATE_GAME_1;
-				}
+			if(lcd_progressive_print("                    ",
+									 "    STATE GAME 3    ",
+									 "                    ",
+									 "                    ",
+									 FOUR_LINES)){
+				main_state = TEST_DIE;
+			}
+			break;
+		case TEST_DIE:
+			if(lcd_progressive_clear(FOUR_LINES)){
+				main_state = STATE_MENU_SHOW;
 			}
 			break;
 		}

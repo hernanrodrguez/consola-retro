@@ -57,7 +57,7 @@
 #define MAX_LINES      2
 #define MAX_CHARS      16
 
-#define PRINT_DELAY_LINES 	10
+#define PRINT_DELAY_LINES 	5
 #define PRINT_DELAY_RING 	50
 
 

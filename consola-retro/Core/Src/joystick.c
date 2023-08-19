@@ -36,7 +36,7 @@ void init_joysticks(void){
 }
 
 uint8_t read_puls(uint8_t n_joystick){
-	if(n_joystick){
+	if(n_joystick == JOYSTICK_1){
 		return( HAL_GPIO_ReadPin(EJE_X_UP_1_GPIO_Port, EJE_X_UP_1_Pin) &&
 				HAL_GPIO_ReadPin(EJE_X_DOWN_1_GPIO_Port, EJE_X_DOWN_1_Pin) &&
 				HAL_GPIO_ReadPin(EJE_Y_UP_1_GPIO_Port, EJE_Y_UP_1_Pin) &&
@@ -49,7 +49,7 @@ uint8_t read_puls(uint8_t n_joystick){
 	}
 }
 
-uint8_t read_joysticks(void){ // por ahora no contemplo el caso del pulsador para encararlo
+uint8_t read_joysticks(void){
 
 	debounce_check(&deb_right_1, HAL_GPIO_ReadPin(EJE_X_UP_1_GPIO_Port, EJE_X_UP_1_Pin));
 	debounce_check(&deb_left_1, HAL_GPIO_ReadPin(EJE_X_DOWN_1_GPIO_Port, EJE_X_DOWN_1_Pin));
