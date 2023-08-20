@@ -160,7 +160,67 @@ uint8_t menu_handle(void){
 	return 0;
 }
 
+uint8_t menu_game_play(void){
+	typedef enum{
+		STATE_COUNTDOWN_SHOW,
+		STATE_COUNTDOWN_HANDLE,
+		STATE_PLAYING_HANDLE,
+		STATE_GAMEOVER
+	}game_play_t;
 
+	static uint32_t seconds=0, minutes=0;
+	static uint32_t score_1=0, score_2=0;
+	static uint32_t start_ticks=0;
+	static int32_t countdown=3;
+	static game_play_t game_play = STATE_COUNTDOWN_SHOW;
+
+	switch(game_play){
+	case STATE_COUNTDOWN_SHOW:
+		if(lcd_progressive_print("        PONG        ",
+								 "El juego comienza en",
+								 "         3          ",
+								 "                    ",
+								 FOUR_LINES)){
+			game_play = STATE_COUNTDOWN_HANDLE;
+			start_ticks = HAL_GetTick();
+		}
+		break;
+	case STATE_COUNTDOWN_HANDLE:
+		if(HAL_GetTick() - start_ticks > ONE_SECOND){
+			countdown--;
+			start_ticks = HAL_GetTick();
+			if(countdown==2){
+				lcd_set_cursor(2, 9);
+				lcd_char('2');
+			} else if(countdown==1){
+				lcd_set_cursor(2, 9);
+				lcd_char('1');
+			} else if(countdown==0){
+				lcd_set_cursor(2, 9);
+				lcd_char('0');
+			} else if(countdown<0){
+				lcd_print("        PONG        ",
+						  "  Partida en juego  ",
+						  "   P1:0       P2:0  ",
+						  "        00:00       ");
+				game_play = STATE_PLAYING_HANDLE;
+			}
+		}
+		break;
+	case STATE_PLAYING_HANDLE:
+		if(HAL_GetTick() - start_ticks > ONE_SECOND){
+			seconds++;
+			if(seconds>59){
+				seconds = 0;
+				minutes++;
+			}
+			lcd_print_time(minutes, seconds);
+			start_ticks = HAL_GetTick();
+		}
+		break;
+	}
+	return 0;
+}
 
 void menu_blink_option(uint8_t option, const char *text){
 	uint8_t i, j;

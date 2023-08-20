@@ -199,6 +199,76 @@ void lcd_print_ring(void){
 	}
 }
 
+void lcd_horizontal_print(const char *text, uint8_t line){
+	static uint8_t i=0, len=0;
+	static const char *previous_text = NULL;
+
+	if(previous_text != text){
+		previous_text = text;
+		i=0;
+		len = str_len(text);
+	}
+
+	if((len-i)>20){ // tengo que seguir avanzando
+		lcd_set_cursor(line, 0);
+		lcd_print_line(text+i);
+		i++;
+	}
+}
+
+uint32_t str_len(const char *str){
+	uint32_t i=0;
+    while (*str) {
+    	*str++;
+        i++;
+    }
+    return i;
+}
+
+void lcd_print_time(uint8_t minutes, uint8_t seconds){
+	char print_num;
+	for(uint8_t j=8; j<13; j++){
+		if(j==8){
+			print_num = ((minutes/10)%10)+'0';
+		} else if(j==9){
+			print_num = (minutes%10)+'0';
+		} else if(j==10){
+			print_num = ':';
+		} else if(j==11){
+			print_num = ((seconds/10)%10)+'0';
+		} else if(j==12){
+			print_num = (seconds%10)+'0';
+		}
+		lcd_set_cursor(3, j);
+		lcd_char(print_num);
+	}
+}
+
+void lcd_print(const char *line0, const char *line1, const char *line2, const char *line3) {
+	lcd_set_cursor(0, 0);
+	for(uint8_t i=0; i<20; i++) {
+        lcd_char(*line0++);
+    }
+	lcd_set_cursor(1, 0);
+	for(uint8_t i=0; i<20; i++) {
+        lcd_char(*line1++);
+    }
+	lcd_set_cursor(2, 0);
+	for(uint8_t i=0; i<20; i++) {
+        lcd_char(*line2++);
+    }
+	lcd_set_cursor(3, 0);
+	for(uint8_t i=0; i<20; i++) {
+        lcd_char(*line3++);
+    }
+}
+
+void lcd_print_line(const char *s) {
+    for(uint8_t i=0; i<20; i++) {
+        lcd_char(*s++);
+    }
+}
+
 void lcd_string(const char *s) {
     while (*s) {
         lcd_char(*s++);

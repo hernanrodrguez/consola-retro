@@ -81,12 +81,16 @@ static void main_task(void *pvParameters){
 		STATE_MENU_CLEAR,
 		STATE_GAME_0_SHOW,
 		STATE_GAME_0_HANDLE,
+		STATE_GAME_0_PLAY,
 		STATE_GAME_1_SHOW,
 		STATE_GAME_1_HANDLE,
+		STATE_GAME_1_PLAY,
 		STATE_GAME_2_SHOW,
 		STATE_GAME_2_HANDLE,
+		STATE_GAME_2_PLAY,
 		STATE_GAME_3_SHOW,
 		STATE_GAME_3_HANDLE,
+		STATE_GAME_3_PLAY,
 		TEST_DIE
 	} main_state_t;
 
@@ -163,12 +167,17 @@ static void main_task(void *pvParameters){
 		case STATE_GAME_0_HANDLE:
 			switch(menu_game_handle()){ // por ahora vuelvo en todos los casos...
 			case 1: // jugar
+				main_state = STATE_GAME_0_PLAY;
+				break;
 			case 2: // reglas
 			case 3: // puntajes
 			case 4: // volver
 				main_state = TEST_DIE;
 				break;
 			}
+			break;
+		case STATE_GAME_0_PLAY:
+			menu_game_play();
 			break;
 		case STATE_GAME_1_SHOW:
 			if(lcd_progressive_print("       TETRIS       ",
@@ -273,6 +282,14 @@ static void joysticks_task(void *pvParameters){
 	}
 }
 
+static void test_task(void *pvParameters){
+
+	while(1){
+		lcd_horizontal_print("Este es un texto largo de ejemplo para probar", 0);
+		HAL_Delay(1000);
+	}
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -325,6 +342,14 @@ int main(void)
 			  1,
 			  NULL);
 
+/*
+  xTaskCreate(test_task,
+			  "test_task",
+			  configMINIMAL_STACK_SIZE,
+			  NULL,
+			  1,
+			  NULL);
+*/
   vTaskStartScheduler();
 
   /* USER CODE END 2 */

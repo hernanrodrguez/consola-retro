@@ -11,9 +11,11 @@
 #include <stdint.h>
 
 #define BLINK_RATE 300
+#define ONE_SECOND 1000
 
 uint8_t menu_handle(void);
 uint8_t menu_game_handle(void);
+uint8_t menu_game_play(void);
 void menu_blink(uint8_t option, const char *text);
 void menu_blink_option(uint8_t option, const char *text);
 

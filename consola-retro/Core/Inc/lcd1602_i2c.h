@@ -57,7 +57,7 @@
 #define MAX_LINES      2
 #define MAX_CHARS      16
 
-#define PRINT_DELAY_LINES 	5
+#define PRINT_DELAY_LINES 	2
 #define PRINT_DELAY_RING 	50
 
 
@@ -89,6 +89,11 @@ void lcd_string(const char *s);
 uint8_t lcd_progressive_print(const char *line_0, const char *line_1, const char *line_2, const char *line_3, uint8_t mode);
 uint8_t lcd_progressive_clear(uint8_t mode);
 void lcd_print_ring(void);
+void lcd_horizontal_print(const char *text, uint8_t line);
+void lcd_print_line(const char *s);
+uint32_t str_len(const char *str);
+void lcd_print_time(uint8_t minutes, uint8_t seconds);
+void lcd_print(const char *line0, const char *line1, const char *line2, const char *line3);
 
 static void inline lcd_char(char val) {
     lcd_send_byte(val, LCD_CHARACTER);
