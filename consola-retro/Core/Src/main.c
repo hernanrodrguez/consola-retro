@@ -40,6 +40,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -55,6 +56,7 @@ SPI_HandleTypeDef hspi1;
 /* USER CODE BEGIN PV */
 
 QueueHandle_t joysticks_queue;
+QueueHandle_t game_queue;
 
 /* USER CODE END PV */
 
@@ -94,7 +96,7 @@ static void main_task(void *pvParameters){
 		TEST_DIE
 	} main_state_t;
 
-	static main_state_t main_state = STATE_WELCOME_SHOW;
+	static main_state_t main_state = STATE_GAME_0_PLAY;// STATE_WELCOME_SHOW;
 	static main_state_t next_state;
 	static uint32_t start_ticks, delay_ticks;
 
@@ -177,7 +179,9 @@ static void main_task(void *pvParameters){
 			}
 			break;
 		case STATE_GAME_0_PLAY:
-			menu_game_play();
+			if(menu_game_play()){
+				main_state = TEST_DIE;
+			}
 			break;
 		case STATE_GAME_1_SHOW:
 			if(lcd_progressive_print("       TETRIS       ",
@@ -286,7 +290,27 @@ static void test_task(void *pvParameters){
 
 	while(1){
 		lcd_horizontal_print("Este es un texto largo de ejemplo para probar", 0);
-		HAL_Delay(1000);
+		vTaskDelay(1000/portTICK_PERIOD_MS);
+	}
+}
+
+static void game_task(void *pvParameters){
+
+	uint8_t game_data;
+
+	while(1){
+		for(uint8_t i=0; i<10; i++){
+			vTaskDelay(1000/portTICK_PERIOD_MS);
+			game_data = PLAYER_1_POINT;
+			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+			vTaskDelay(1000/portTICK_PERIOD_MS);
+			game_data = PLAYER_2_POINT;
+			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+			vTaskDelay(1000/portTICK_PERIOD_MS);
+		}
+		game_data = GAME_OVER;
+		xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+		vTaskDelete(NULL);
 	}
 }
 
@@ -325,6 +349,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   joysticks_queue = xQueueCreate(1, sizeof(uint8_t));
+  game_queue = xQueueCreate(1, sizeof(uint8_t));
 
   lcd_init(&hi2c1);
 
@@ -337,6 +362,13 @@ int main(void)
 
   xTaskCreate(joysticks_task,
 			  "joysticks_task",
+			  configMINIMAL_STACK_SIZE,
+			  NULL,
+			  1,
+			  NULL);
+
+  xTaskCreate(game_task,
+			  "game_task",
 			  configMINIMAL_STACK_SIZE,
 			  NULL,
 			  1,

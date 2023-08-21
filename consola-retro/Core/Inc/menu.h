@@ -13,6 +13,10 @@
 #define BLINK_RATE 300
 #define ONE_SECOND 1000
 
+#define PLAYER_1_POINT 	1
+#define PLAYER_2_POINT 	2
+#define GAME_OVER		3
+
 uint8_t menu_handle(void);
 uint8_t menu_game_handle(void);
 uint8_t menu_game_play(void);

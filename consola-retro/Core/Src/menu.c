@@ -14,6 +14,7 @@
 #include "queue.h"
 
 extern QueueHandle_t joysticks_queue;
+extern QueueHandle_t game_queue;
 
 uint8_t menu_game_handle(void){
 	typedef enum{
@@ -173,6 +174,7 @@ uint8_t menu_game_play(void){
 	static uint32_t start_ticks=0;
 	static int32_t countdown=3;
 	static game_play_t game_play = STATE_COUNTDOWN_SHOW;
+	uint8_t game_data;
 
 	switch(game_play){
 	case STATE_COUNTDOWN_SHOW:
@@ -201,13 +203,27 @@ uint8_t menu_game_play(void){
 			} else if(countdown<0){
 				lcd_print("        PONG        ",
 						  "  Partida en juego  ",
-						  "   P1:0       P2:0  ",
+						  "   P1:00     P2:00  ",
 						  "        00:00       ");
 				game_play = STATE_PLAYING_HANDLE;
 			}
 		}
 		break;
 	case STATE_PLAYING_HANDLE:
+		if(pdTRUE == xQueueReceive(game_queue, &game_data, 0)){
+			switch(game_data){
+			case PLAYER_1_POINT:
+				score_1++;
+				break;
+			case PLAYER_2_POINT:
+				score_2++;
+				break;
+			case GAME_OVER:
+				return 1;
+				break;
+			}
+			lcd_print_score(score_1, score_2);
+		}
 		if(HAL_GetTick() - start_ticks > ONE_SECOND){
 			seconds++;
 			if(seconds>59){

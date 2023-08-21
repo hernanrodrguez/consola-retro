@@ -244,6 +244,26 @@ void lcd_print_time(uint8_t minutes, uint8_t seconds){
 	}
 }
 
+void lcd_print_score(uint8_t score_1, uint8_t score_2){
+	char print_num;
+
+	print_num = ((score_1/10)%10)+'0';
+	lcd_set_cursor(2, 6);
+	lcd_char(print_num);
+
+	print_num = (score_1%10)+'0';
+	lcd_set_cursor(2, 7);
+	lcd_char(print_num);
+
+	print_num = ((score_2/10)%10)+'0';
+	lcd_set_cursor(2, 16);
+	lcd_char(print_num);
+
+	print_num = (score_2%10)+'0';
+	lcd_set_cursor(2, 17);
+	lcd_char(print_num);
+}
+
 void lcd_print(const char *line0, const char *line1, const char *line2, const char *line3) {
 	lcd_set_cursor(0, 0);
 	for(uint8_t i=0; i<20; i++) {
