@@ -20,7 +20,7 @@
 // The Number OF Separate DOT MATRIX Units (Whether Single or Cascaded) To Be Used In The Project
 #define DOT_MATRIX_UNITS  1
 // The Matrix Units Count Of The Longest Cascaded String In The System
-#define MAX_CASCADED_NUM  4
+#define MAX_CASCADED_NUM  16
 
 // DOT Matrix SPI Options
 #define DOT_MATRIX_SPI    SPI1
@@ -78,5 +78,8 @@ void DOT_MATRIX_Main(void);
 void MATRIX_TMR_OVF_ISR(TIM_HandleTypeDef* htim);
 void MATRIX_SCROLL_SetSpeed(uint8_t au8_MATRIX_Instance, uint16_t au16_SPEED);
 void MATRIX_DisplayMessage(uint8_t au8_MATRIX_Instance, char* ArrayPointer, uint16_t ArraySize);
+// Custom
+void MATRIX_load_buffer(uint8_t au8_MATRIX_Instance);
+void DisplayBuffer(uint8_t au8_MATRIX_Instance);
 
 #endif /* DOT_MATRIX_H_ */

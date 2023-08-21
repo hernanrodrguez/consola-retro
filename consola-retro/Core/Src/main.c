@@ -268,10 +268,12 @@ static void joysticks_task(void *pvParameters){
 
 static void test_task(void *pvParameters){
 
-	char MSG[] = "Hola mundo MAX7219 ";
+	//char MSG[] = "Hola mundo MAX7219 ";
 
 	DOT_MATRIX_Init_TMR(&hspi1, &htim2);
-	MATRIX_DisplayMessage(MATRIX_DISPLAY_UNIT1, MSG, sizeof(MSG));
+	//MATRIX_DisplayMessage(MATRIX_DISPLAY_UNIT1, MSG, sizeof(MSG));
+	MATRIX_load_buffer(MATRIX_DISPLAY_UNIT1);
+	DisplayBuffer(MATRIX_DISPLAY_UNIT1);
 
 	while(1){
 	}
@@ -590,7 +592,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
 
-	MATRIX_TMR_OVF_ISR(htim);
+	//MATRIX_TMR_OVF_ISR(htim);
 
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM1) {

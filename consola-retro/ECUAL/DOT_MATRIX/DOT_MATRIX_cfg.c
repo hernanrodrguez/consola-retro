@@ -20,7 +20,7 @@ const DOT_MATRIX_CfgType DOT_MATRIX_CfgParam[DOT_MATRIX_UNITS] =
 		SS_LED_GPIO_Port,
 		SS_LED_Pin,
 		75,   /* Scroll Speed*/
-		4,    /* Number Of Cascaded Devices*/
+		16,    /* Number Of Cascaded Devices*/
 		8,    /* Brightness Level */
 		SCROLL_MODE
 	}
