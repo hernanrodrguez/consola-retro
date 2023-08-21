@@ -531,14 +531,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EJE_Y_DOWN_2_Pin EJE_Y_UP_2_Pin EJE_X_DOWN_2_Pin EJE_X_UP_2_Pin */
-  GPIO_InitStruct.Pin = EJE_Y_DOWN_2_Pin|EJE_Y_UP_2_Pin|EJE_X_DOWN_2_Pin|EJE_X_UP_2_Pin;
+  /*Configure GPIO pins : JOYSTICK_2_DOWN_Pin JOYSTICK_2_UP_Pin JOYSTICK_2_LEFT_Pin JOYSTICK_2_RIGHT_Pin */
+  GPIO_InitStruct.Pin = JOYSTICK_2_DOWN_Pin|JOYSTICK_2_UP_Pin|JOYSTICK_2_LEFT_Pin|JOYSTICK_2_RIGHT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EJE_X_UP_1_Pin EJE_X_DOWN_1_Pin EJE_Y_UP_1_Pin EJE_Y_DOWN_1_Pin */
-  GPIO_InitStruct.Pin = EJE_X_UP_1_Pin|EJE_X_DOWN_1_Pin|EJE_Y_UP_1_Pin|EJE_Y_DOWN_1_Pin;
+  /*Configure GPIO pins : JOYSTICK_1_RIGHT_Pin JOYSTICK_1_LEFT_Pin JOYSTICK_1_UP_Pin JOYSTICK_1_DOWN_Pin */
+  GPIO_InitStruct.Pin = JOYSTICK_1_RIGHT_Pin|JOYSTICK_1_LEFT_Pin|JOYSTICK_1_UP_Pin|JOYSTICK_1_DOWN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);

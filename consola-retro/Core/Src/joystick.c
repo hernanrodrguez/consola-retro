@@ -37,30 +37,30 @@ void init_joysticks(void){
 
 uint8_t read_puls(uint8_t n_joystick){
 	if(n_joystick == JOYSTICK_1){
-		return( HAL_GPIO_ReadPin(EJE_X_UP_1_GPIO_Port, EJE_X_UP_1_Pin) &&
-				HAL_GPIO_ReadPin(EJE_X_DOWN_1_GPIO_Port, EJE_X_DOWN_1_Pin) &&
-				HAL_GPIO_ReadPin(EJE_Y_UP_1_GPIO_Port, EJE_Y_UP_1_Pin) &&
-				HAL_GPIO_ReadPin(EJE_Y_DOWN_1_GPIO_Port, EJE_Y_DOWN_1_Pin));
+		return( HAL_GPIO_ReadPin(JOYSTICK_1_RIGHT_GPIO_Port, JOYSTICK_1_RIGHT_Pin) &&
+				HAL_GPIO_ReadPin(JOYSTICK_1_LEFT_GPIO_Port, JOYSTICK_1_LEFT_Pin) &&
+				HAL_GPIO_ReadPin(JOYSTICK_1_UP_GPIO_Port, JOYSTICK_1_UP_Pin) &&
+				HAL_GPIO_ReadPin(JOYSTICK_1_DOWN_GPIO_Port, JOYSTICK_1_DOWN_Pin));
 	} else {
-		return( HAL_GPIO_ReadPin(EJE_X_UP_2_GPIO_Port, EJE_X_UP_2_Pin) &&
-				HAL_GPIO_ReadPin(EJE_X_DOWN_2_GPIO_Port, EJE_X_DOWN_2_Pin) &&
-				HAL_GPIO_ReadPin(EJE_Y_UP_2_GPIO_Port, EJE_Y_UP_2_Pin) &&
-				HAL_GPIO_ReadPin(EJE_Y_DOWN_2_GPIO_Port, EJE_Y_DOWN_2_Pin));
+		return( HAL_GPIO_ReadPin(JOYSTICK_2_RIGHT_GPIO_Port, JOYSTICK_2_RIGHT_Pin) &&
+				HAL_GPIO_ReadPin(JOYSTICK_2_LEFT_GPIO_Port, JOYSTICK_2_LEFT_Pin) &&
+				HAL_GPIO_ReadPin(JOYSTICK_2_UP_GPIO_Port, JOYSTICK_2_UP_Pin) &&
+				HAL_GPIO_ReadPin(JOYSTICK_2_DOWN_GPIO_Port, JOYSTICK_2_DOWN_Pin));
 	}
 }
 
 uint8_t read_joysticks(void){
 
-	debounce_check(&deb_right_1, HAL_GPIO_ReadPin(EJE_X_UP_1_GPIO_Port, EJE_X_UP_1_Pin));
-	debounce_check(&deb_left_1, HAL_GPIO_ReadPin(EJE_X_DOWN_1_GPIO_Port, EJE_X_DOWN_1_Pin));
-	debounce_check(&deb_up_1, HAL_GPIO_ReadPin(EJE_Y_UP_1_GPIO_Port, EJE_Y_UP_1_Pin));
-	debounce_check(&deb_down_1, HAL_GPIO_ReadPin(EJE_Y_DOWN_1_GPIO_Port, EJE_Y_DOWN_1_Pin));
+	debounce_check(&deb_right_1, HAL_GPIO_ReadPin(JOYSTICK_1_RIGHT_GPIO_Port, JOYSTICK_1_RIGHT_Pin));
+	debounce_check(&deb_left_1, HAL_GPIO_ReadPin(JOYSTICK_1_LEFT_GPIO_Port, JOYSTICK_1_LEFT_Pin));
+	debounce_check(&deb_up_1, HAL_GPIO_ReadPin(JOYSTICK_1_UP_GPIO_Port, JOYSTICK_1_UP_Pin));
+	debounce_check(&deb_down_1, HAL_GPIO_ReadPin(JOYSTICK_1_DOWN_GPIO_Port, JOYSTICK_1_DOWN_Pin));
 	debounce_check(&deb_puls_1, read_puls(JOYSTICK_1));
 
-	debounce_check(&deb_right_2, HAL_GPIO_ReadPin(EJE_X_UP_2_GPIO_Port, EJE_X_UP_2_Pin));
-	debounce_check(&deb_left_2, HAL_GPIO_ReadPin(EJE_X_DOWN_2_GPIO_Port, EJE_X_DOWN_2_Pin));
-	debounce_check(&deb_up_2, HAL_GPIO_ReadPin(EJE_Y_UP_2_GPIO_Port, EJE_Y_UP_2_Pin));
-	debounce_check(&deb_down_2, HAL_GPIO_ReadPin(EJE_Y_DOWN_2_GPIO_Port, EJE_Y_DOWN_2_Pin));
+	debounce_check(&deb_right_2, HAL_GPIO_ReadPin(JOYSTICK_2_RIGHT_GPIO_Port, JOYSTICK_2_RIGHT_Pin));
+	debounce_check(&deb_left_2, HAL_GPIO_ReadPin(JOYSTICK_2_LEFT_GPIO_Port, JOYSTICK_2_LEFT_Pin));
+	debounce_check(&deb_up_2, HAL_GPIO_ReadPin(JOYSTICK_2_UP_GPIO_Port, JOYSTICK_2_UP_Pin));
+	debounce_check(&deb_down_2, HAL_GPIO_ReadPin(JOYSTICK_2_DOWN_GPIO_Port, JOYSTICK_2_DOWN_Pin));
 	debounce_check(&deb_puls_2, read_puls(JOYSTICK_2));
 
 	if(debounce_edge(&deb_right_1)){
