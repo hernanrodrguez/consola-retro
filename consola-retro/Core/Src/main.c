@@ -26,7 +26,7 @@
 #include "task.h"
 #include "queue.h"
 
-#include "max7219.h"
+#include "DOT_MATRIX.h"
 #include "lcd1602_i2c.h"
 #include "joystick.h"
 #include "menu.h"
@@ -40,7 +40,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define MATRIX_DISPLAY_UNIT1  0
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,6 +53,8 @@ I2C_HandleTypeDef hi2c1;
 
 SPI_HandleTypeDef hspi1;
 
+TIM_HandleTypeDef htim2;
+
 /* USER CODE BEGIN PV */
 
 QueueHandle_t joysticks_queue;
@@ -64,7 +66,8 @@ QueueHandle_t game_queue;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
-static void MX_SPI1_Init(void);
+//static void MX_SPI1_Init(void);
+//static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -248,30 +251,7 @@ static void main_task(void *pvParameters){
 		}
 	}
 }
-/*
-static void led_task(void *pvParameters){
-	uint8_t matrix[8];
 
-	matrix[0] = 0b01010101;
-	matrix[1] = 0b10101010;
-	matrix[2] = 0b00000000;
-	matrix[3] = 0b11111111;
-	matrix[4] = 0b11111111;
-	matrix[5] = 0b00000000;
-	matrix[6] = 0b10101010;
-	matrix[7] = 0b01010101;
-
-	max7219_init(&hspi1, SS_LED_GPIO_Port, SS_LED_Pin);
-
-	while(1){
-		max7219_print(matrix);
-		for(uint32_t i=0; i<8; i++){
-			matrix[i]++;
-		}
-		vTaskDelay(1000/portTICK_PERIOD_MS);
-	}
-}
-*/
 static void joysticks_task(void *pvParameters){
 
 	uint8_t joystick;
@@ -288,9 +268,12 @@ static void joysticks_task(void *pvParameters){
 
 static void test_task(void *pvParameters){
 
+	char MSG[] = "Hola mundo MAX7219 ";
+
+	DOT_MATRIX_Init_TMR(&hspi1, &htim2);
+	MATRIX_DisplayMessage(MATRIX_DISPLAY_UNIT1, MSG, sizeof(MSG));
+
 	while(1){
-		lcd_horizontal_print("Este es un texto largo de ejemplo para probar", 0);
-		vTaskDelay(1000/portTICK_PERIOD_MS);
 	}
 }
 
@@ -345,14 +328,15 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C1_Init();
-  MX_SPI1_Init();
+  //MX_SPI1_Init();
+  //MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
   joysticks_queue = xQueueCreate(1, sizeof(uint8_t));
   game_queue = xQueueCreate(1, sizeof(uint8_t));
 
   lcd_init(&hi2c1);
-
+/*
   xTaskCreate(main_task,
 			  "main_task",
 			  configMINIMAL_STACK_SIZE,
@@ -373,15 +357,15 @@ int main(void)
 			  NULL,
 			  1,
 			  NULL);
+*/
 
-/*
   xTaskCreate(test_task,
 			  "test_task",
 			  configMINIMAL_STACK_SIZE,
 			  NULL,
 			  1,
 			  NULL);
-*/
+
   vTaskStartScheduler();
 
   /* USER CODE END 2 */
@@ -474,38 +458,83 @@ static void MX_I2C1_Init(void)
   * @param None
   * @retval None
   */
-static void MX_SPI1_Init(void)
-{
+//static void MX_SPI1_Init(void)
+//{
+//
+//  /* USER CODE BEGIN SPI1_Init 0 */
+//
+//  /* USER CODE END SPI1_Init 0 */
+//
+//  /* USER CODE BEGIN SPI1_Init 1 */
+//
+//  /* USER CODE END SPI1_Init 1 */
+//  /* SPI1 parameter configuration*/
+//  hspi1.Instance = SPI1;
+//  hspi1.Init.Mode = SPI_MODE_MASTER;
+//  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+//  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+//  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+//  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+//  hspi1.Init.NSS = SPI_NSS_SOFT;
+//  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+//  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+//  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+//  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+//  hspi1.Init.CRCPolynomial = 10;
+//  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+//  {
+//    Error_Handler();
+//  }
+//  /* USER CODE BEGIN SPI1_Init 2 */
+//
+//  /* USER CODE END SPI1_Init 2 */
+//
+//}
 
-  /* USER CODE BEGIN SPI1_Init 0 */
-
-  /* USER CODE END SPI1_Init 0 */
-
-  /* USER CODE BEGIN SPI1_Init 1 */
-
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI1_Init 2 */
-
-  /* USER CODE END SPI1_Init 2 */
-
-}
+/**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+//static void MX_TIM2_Init(void)
+//{
+//
+//  /* USER CODE BEGIN TIM2_Init 0 */
+////
+//  /* USER CODE END TIM2_Init 0 */
+//
+//  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+//  TIM_MasterConfigTypeDef sMasterConfig = {0};
+//
+//  /* USER CODE BEGIN TIM2_Init 1 */
+////
+//  /* USER CODE END TIM2_Init 1 */
+//  htim2.Instance = TIM2;
+//  htim2.Init.Prescaler = 0;
+//  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+//  htim2.Init.Period = 65535;
+//  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+//  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+//  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+//  {
+//    Error_Handler();
+//  }
+//  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+//  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+//  {
+//    Error_Handler();
+//  }
+//  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+//  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+//  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+//  {
+//    Error_Handler();
+//  }
+//  /* USER CODE BEGIN TIM2_Init 2 */
+////
+//  /* USER CODE END TIM2_Init 2 */
+//
+//}
 
 /**
   * @brief GPIO Initialization Function
@@ -560,6 +589,8 @@ static void MX_GPIO_Init(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
+
+	MATRIX_TMR_OVF_ISR(htim);
 
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM1) {
