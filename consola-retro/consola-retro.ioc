@@ -51,7 +51,6 @@ NVIC.PriorityGroup=NVIC_PRIORITYGROUP_4
 NVIC.SVCall_IRQn=true\:0\:0\:false\:false\:true\:false\:false
 NVIC.SysTick_IRQn=true\:15\:0\:false\:false\:true\:false\:true
 NVIC.TIM1_UP_IRQn=true\:15\:0\:false\:false\:true\:false\:true
-NVIC.TIM2_IRQn=true\:0\:0\:false\:false\:true\:true\:true
 NVIC.TimeBase=TIM1_UP_IRQn
 NVIC.TimeBaseIP=TIM1
 NVIC.UsageFault_IRQn=true\:0\:0\:false\:false\:true\:false\:false

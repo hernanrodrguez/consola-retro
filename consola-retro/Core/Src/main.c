@@ -53,7 +53,7 @@ I2C_HandleTypeDef hi2c1;
 
 SPI_HandleTypeDef hspi1;
 
-TIM_HandleTypeDef htim2;
+//TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
 
@@ -270,12 +270,27 @@ static void test_task(void *pvParameters){
 
 	//char MSG[] = "Hola mundo MAX7219 ";
 
-	DOT_MATRIX_Init_TMR(&hspi1, &htim2);
+	DOT_MATRIX_Init(&hspi1);
 	//MATRIX_DisplayMessage(MATRIX_DISPLAY_UNIT1, MSG, sizeof(MSG));
-	MATRIX_load_buffer(MATRIX_DISPLAY_UNIT1);
-	DisplayBuffer(MATRIX_DISPLAY_UNIT1);
+
 
 	while(1){
+
+		for(uint8_t x=0; x<32; x++){
+			/*MATRIX_load_buffer(MATRIX_DISPLAY_UNIT1);
+			DisplayBuffer(MATRIX_DISPLAY_UNIT1);
+			vTaskDelay(500/portTICK_PERIOD_MS);
+			MATRIX_load_buffer_2(MATRIX_DISPLAY_UNIT1);
+			DisplayBuffer(MATRIX_DISPLAY_UNIT1);
+			vTaskDelay(500/portTICK_PERIOD_MS);*/
+			//for(uint8_t y=0; y<32;y++){
+				MATRIX_load_buffer_2(MATRIX_DISPLAY_UNIT1);
+				DisplayBuffer(MATRIX_DISPLAY_UNIT1);
+				MATRIX_set_led(MATRIX_DISPLAY_UNIT1, x, x);
+				DisplayBuffer(MATRIX_DISPLAY_UNIT1);
+				vTaskDelay(100/portTICK_PERIOD_MS);
+			//}
+		}
 	}
 }
 
@@ -330,8 +345,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C1_Init();
-  //MX_SPI1_Init();
-  //MX_TIM2_Init();
+//  MX_SPI1_Init();
+//  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
   joysticks_queue = xQueueCreate(1, sizeof(uint8_t));
@@ -464,11 +479,11 @@ static void MX_I2C1_Init(void)
 //{
 //
 //  /* USER CODE BEGIN SPI1_Init 0 */
-//
+////
 //  /* USER CODE END SPI1_Init 0 */
 //
 //  /* USER CODE BEGIN SPI1_Init 1 */
-//
+////
 //  /* USER CODE END SPI1_Init 1 */
 //  /* SPI1 parameter configuration*/
 //  hspi1.Instance = SPI1;
@@ -488,7 +503,7 @@ static void MX_I2C1_Init(void)
 //    Error_Handler();
 //  }
 //  /* USER CODE BEGIN SPI1_Init 2 */
-//
+////
 //  /* USER CODE END SPI1_Init 2 */
 //
 //}
@@ -502,14 +517,14 @@ static void MX_I2C1_Init(void)
 //{
 //
 //  /* USER CODE BEGIN TIM2_Init 0 */
-////
+//////
 //  /* USER CODE END TIM2_Init 0 */
 //
 //  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
 //  TIM_MasterConfigTypeDef sMasterConfig = {0};
 //
 //  /* USER CODE BEGIN TIM2_Init 1 */
-////
+//////
 //  /* USER CODE END TIM2_Init 1 */
 //  htim2.Instance = TIM2;
 //  htim2.Init.Prescaler = 0;
@@ -533,7 +548,7 @@ static void MX_I2C1_Init(void)
 //    Error_Handler();
 //  }
 //  /* USER CODE BEGIN TIM2_Init 2 */
-////
+//////
 //  /* USER CODE END TIM2_Init 2 */
 //
 //}

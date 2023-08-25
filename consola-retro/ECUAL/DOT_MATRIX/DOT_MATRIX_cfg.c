@@ -22,6 +22,6 @@ const DOT_MATRIX_CfgType DOT_MATRIX_CfgParam[DOT_MATRIX_UNITS] =
 		75,   /* Scroll Speed*/
 		16,    /* Number Of Cascaded Devices*/
 		8,    /* Brightness Level */
-		SCROLL_MODE
+		STATIC_MODE
 	}
 };

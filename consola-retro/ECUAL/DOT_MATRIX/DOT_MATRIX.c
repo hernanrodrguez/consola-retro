@@ -51,6 +51,26 @@ char test_buf[128] = {
 	120,121,122,123,124,125,126,127
 };
 
+char test_buf_2[128] = {
+	1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1
+};
+
+
 
 // Font 7x5 Bitmap (ASCII)
 char FONT_7x5[96][5] = {
@@ -202,6 +222,11 @@ void DisplayBuffer(uint8_t au8_MATRIX_Instance)
 		   SS_DISABLE(au8_MATRIX_Instance);
 	    }
     }
+
+	for(i = 0; i < DOT_MATRIX_CfgParam[au8_MATRIX_Instance].CASCADED_DEVICES*8; i++)
+	{
+		gs_MATRIX_info[au8_MATRIX_Instance].Buffer[i] =  0; // clean buffer
+	}
 }
 
 static void PushToBuffer(uint8_t au8_MATRIX_Instance, uint8_t au8_NewByte)
@@ -393,12 +418,75 @@ void MATRIX_DisplayMessage(uint8_t au8_MATRIX_Instance, char* ArrayPointer, uint
 	gs_MATRIX_info[au8_MATRIX_Instance].BufferInit = 1;
 }
 
+void MATRIX_set_led(uint8_t au8_MATRIX_Instance, uint8_t x, uint8_t y){
+	uint8_t i=0;
+	uint8_t byte=0;
+	if(x<8){
+		byte = (1<<(7-x));
+		if(y<8) {
+			i = y;
+		} else if(y<16) {
+			i = y+24;
+		} else if(y<24) {
+			i = y+48;
+		} else {
+			i = y+72;
+		}
+	} else if(x<16){
+		byte = (1<<(7-(x-8)));
+		if(y<8) {
+			i = y+8;
+		} else if(y<16) {
+			i = y+32;
+		} else if(y<24) {
+			i = y+56;
+		} else {
+			i = y+80;
+		}
+	} else if(x<24){
+		byte = (1<<(7-(x-16)));
+		if(y<8) {
+			i = y+16;
+		} else if(y<16) {
+			i = y+40;
+		} else if(y<24) {
+			i = y+64;
+		} else {
+			i = y+88;
+		}
+	} else {
+		byte = (1<<(7-(x-24)));
+		if(y<8) {
+			i = y+24;
+		} else if(y<16) {
+			i = y+48;
+		} else if(y<24) {
+			i = y+72;
+		} else {
+			i = y+96;
+		}
+	}
+
+	gs_MATRIX_info[au8_MATRIX_Instance].Buffer[i] =  byte;
+
+}
+
 void MATRIX_load_buffer(uint8_t au8_MATRIX_Instance){
 	uint8_t i = 0;
 
 	for(i = 0; i < DOT_MATRIX_CfgParam[au8_MATRIX_Instance].CASCADED_DEVICES*8; i++)
 	{
 		gs_MATRIX_info[au8_MATRIX_Instance].Buffer[i] =  test_buf[i]; //test_array[i][0];// gs_MATRIX_info[au8_MATRIX_Instance].Buffer[i+1];
+	}
+	//gs_MATRIX_info[au8_MATRIX_Instance].Buffer[DOT_MATRIX_CfgParam[au8_MATRIX_Instance].CASCADED_DEVICES*8 - 1] = au8_NewByte;
+}
+
+void MATRIX_load_buffer_2(uint8_t au8_MATRIX_Instance){
+	uint8_t i = 0;
+
+	for(i = 0; i < DOT_MATRIX_CfgParam[au8_MATRIX_Instance].CASCADED_DEVICES*8; i++)
+	{
+		gs_MATRIX_info[au8_MATRIX_Instance].Buffer[i] =  test_buf_2[i]; //test_array[i][0];// gs_MATRIX_info[au8_MATRIX_Instance].Buffer[i+1];
 	}
 	//gs_MATRIX_info[au8_MATRIX_Instance].Buffer[DOT_MATRIX_CfgParam[au8_MATRIX_Instance].CASCADED_DEVICES*8 - 1] = au8_NewByte;
 }
