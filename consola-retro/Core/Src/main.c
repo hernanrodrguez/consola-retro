@@ -276,21 +276,31 @@ static void test_task(void *pvParameters){
 
 	while(1){
 
-		for(uint8_t x=0; x<32; x++){
-			/*MATRIX_load_buffer(MATRIX_DISPLAY_UNIT1);
-			DisplayBuffer(MATRIX_DISPLAY_UNIT1);
-			vTaskDelay(500/portTICK_PERIOD_MS);
-			MATRIX_load_buffer_2(MATRIX_DISPLAY_UNIT1);
-			DisplayBuffer(MATRIX_DISPLAY_UNIT1);
-			vTaskDelay(500/portTICK_PERIOD_MS);*/
-			//for(uint8_t y=0; y<32;y++){
-				MATRIX_load_buffer_2(MATRIX_DISPLAY_UNIT1);
-				DisplayBuffer(MATRIX_DISPLAY_UNIT1);
-				MATRIX_set_led(MATRIX_DISPLAY_UNIT1, x, x);
-				DisplayBuffer(MATRIX_DISPLAY_UNIT1);
-				vTaskDelay(100/portTICK_PERIOD_MS);
-			//}
+		for(uint8_t i=0; i<32; i++){
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 0, i);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31, i);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 0);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 31);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, i);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31-i, i);
 		}
+
+		DisplayBuffer(MATRIX_DISPLAY_UNIT1);
+		vTaskDelay(500/portTICK_PERIOD_MS);
+
+		for(uint8_t i=0; i<32; i++){
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 0, i);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31, i);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 0);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 31);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 15);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 16);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 15, i);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 16, i);
+		}
+
+		DisplayBuffer(MATRIX_DISPLAY_UNIT1);
+		vTaskDelay(500/portTICK_PERIOD_MS);
 	}
 }
 

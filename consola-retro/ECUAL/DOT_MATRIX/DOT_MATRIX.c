@@ -467,7 +467,7 @@ void MATRIX_set_led(uint8_t au8_MATRIX_Instance, uint8_t x, uint8_t y){
 		}
 	}
 
-	gs_MATRIX_info[au8_MATRIX_Instance].Buffer[i] =  byte;
+	gs_MATRIX_info[au8_MATRIX_Instance].Buffer[i] =  gs_MATRIX_info[au8_MATRIX_Instance].Buffer[i] | byte;
 
 }
 
