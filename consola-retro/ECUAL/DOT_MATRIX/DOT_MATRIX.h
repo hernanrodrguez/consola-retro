@@ -82,6 +82,6 @@ void MATRIX_DisplayMessage(uint8_t au8_MATRIX_Instance, char* ArrayPointer, uint
 void MATRIX_load_buffer(uint8_t au8_MATRIX_Instance);
 void MATRIX_load_buffer_2(uint8_t au8_MATRIX_Instance);
 void DisplayBuffer(uint8_t au8_MATRIX_Instance);
-void MATRIX_set_led(uint8_t au8_MATRIX_Instance, uint8_t x, uint8_t y);
+void MATRIX_set_led(uint8_t au8_MATRIX_Instance, uint8_t x, uint8_t y, uint8_t state);
 
 #endif /* DOT_MATRIX_H_ */
