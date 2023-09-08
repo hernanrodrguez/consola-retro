@@ -35,6 +35,9 @@
 #define STATIC_MODE       0
 #define SCROLL_MODE       1
 
+#define MATRIX_LED_OFF    0
+#define MATRIX_LED_ON     1
+
 // DOT MATRIX Configuration Parameter Structure
 typedef struct
 {
@@ -81,7 +84,8 @@ void MATRIX_DisplayMessage(uint8_t au8_MATRIX_Instance, char* ArrayPointer, uint
 // Custom
 void MATRIX_load_buffer(uint8_t au8_MATRIX_Instance);
 void MATRIX_load_buffer_2(uint8_t au8_MATRIX_Instance);
-void DisplayBuffer(uint8_t au8_MATRIX_Instance);
+void MATRIX_display_buffer(uint8_t au8_MATRIX_Instance);
 void MATRIX_set_led(uint8_t au8_MATRIX_Instance, uint8_t x, uint8_t y, uint8_t state);
+void MATRIX_clear_buffer(uint8_t au8_MATRIX_Instance);
 
 #endif /* DOT_MATRIX_H_ */

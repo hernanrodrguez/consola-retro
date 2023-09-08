@@ -388,7 +388,7 @@ void MATRIX_DisplayMessage(uint8_t au8_MATRIX_Instance, char* ArrayPointer, uint
 }
 
 
-void DisplayBuffer(uint8_t au8_MATRIX_Instance)
+void MATRIX_display_buffer(uint8_t au8_MATRIX_Instance)
 {
 	uint8_t i = 0;
 

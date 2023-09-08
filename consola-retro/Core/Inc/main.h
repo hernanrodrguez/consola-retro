@@ -42,7 +42,7 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+#define MATRIX_DISPLAY_UNIT1  0
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
