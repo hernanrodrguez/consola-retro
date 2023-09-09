@@ -37,6 +37,12 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
+typedef struct {
+    uint16_t frequency;
+    uint16_t duration;
+} note_t;
+
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -54,12 +60,295 @@ I2C_HandleTypeDef hi2c1;
 
 SPI_HandleTypeDef hspi1;
 
-//TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
 
 QueueHandle_t joysticks_queue;
 QueueHandle_t game_queue;
+
+#define REST 0 // Valor para pausa en la melodía
+#define E4 329 // Frecuencia de la nota E4 en Hz
+#define G4 392 // Frecuencia de la nota G4 en Hz
+#define A4 440 // Frecuencia de la nota A4 en Hz
+#define B4 494 // Frecuencia de la nota B4 en Hz
+#define C5 523 // Frecuencia de la nota C5 en Hz
+#define D5 587 // Frecuencia de la nota D5 en Hz
+#define E5 659 // Frecuencia de la nota E5 en Hz
+#define F5 698 // Frecuencia de la nota F5 en Hz
+#define G5 784 // Frecuencia de la nota G5 en Hz
+#define A5 880 // Frecuencia de la nota A5 en Hz
+
+note_t marioBrosMelody[] = {
+    {659, 250},
+    {0, 100}, // Pausa
+    {659, 250},
+    {0, 100}, // Pausa
+    {659, 250},
+    {0, 100}, // Pausa
+    {523, 250},
+    {659, 250},
+    {0, 100}, // Pausa
+    {784, 250},
+    {0, 400}, // Pausa
+    {392, 250},
+    {0, 400}, // Pausa
+    {523, 250},
+    {0, 400}, // Pausa
+    {392, 250},
+};
+
+note_t twinkleTwinkleMelody[] = {
+    {523, 400},
+    {523, 400},
+    {659, 400},
+    {659, 400},
+    {783, 400},
+    {783, 400},
+    {659, 800},
+    {523, 400},
+    {523, 400},
+    {392, 400},
+    {392, 400},
+    {329, 400},
+    {329, 400},
+    {261, 800},
+};
+
+note_t jingleBellsMelody[] = {
+    {659, 250},
+    {659, 250},
+    {0, 250}, // Pausa
+    {659, 250},
+    {659, 250},
+    {0, 250}, // Pausa
+    {659, 250},
+    {0, 250}, // Pausa
+    {659, 250},
+    {659, 250},
+    {659, 250},
+    {659, 250},
+    {587, 250},
+    {587, 250},
+    {659, 250},
+    {0, 250}, // Pausa
+};
+
+note_t happyBirthdayMelody[] = {
+    {392, 400},
+    {392, 400},
+    {440, 800},
+    {392, 400},
+    {523, 800},
+    {392, 400},
+    {392, 400},
+    {440, 800},
+    {392, 400},
+    {659, 800},
+    {587, 400},
+    {523, 400},
+    {349, 800},
+};
+
+note_t harryPotterMelody[] = {
+    {392, 400},
+    {523, 400},
+    {587, 400},
+    {739, 600},
+    {659, 200},
+    {587, 400},
+    {659, 600},
+    {783, 600},
+    {987, 600},
+    {880, 400},
+    {783, 400},
+    {880, 400},
+    {1046, 800},
+    {987, 400},
+    {880, 400},
+    {783, 400},
+    {659, 600},
+    {587, 200},
+    {659, 400},
+    {987, 400},
+    {880, 400},
+    {783, 400},
+    {659, 600},
+    {587, 200},
+    {523, 400},
+};
+
+note_t powerOnMelody1[] = {
+    {784, 200},
+    {988, 200},
+    {1175, 200},
+    {1397, 400},
+    {1175, 200},
+    {1397, 400},
+    {1568, 400},
+    {1760, 400},
+};
+
+note_t powerOnMelody2[] = {
+    {523, 200},
+    {659, 200},
+    {784, 200},
+    {880, 400},
+    {784, 200},
+    {880, 400},
+    {1046, 400},
+    {1175, 400},
+};
+
+note_t powerOnMelody3[] = {
+    {587, 300},
+    {698, 300},
+    {784, 300},
+    {880, 600},
+    {784, 300},
+    {880, 600},
+    {1046, 600},
+    {1175, 600},
+};
+
+note_t inGameMelody1[] = {
+    {440, 300},
+    {523, 300},
+    {587, 300},
+    {659, 600},
+    {587, 300},
+    {659, 600},
+};
+
+note_t inGameMelody2[] = {
+    {523, 200},
+    {659, 200},
+    {784, 200},
+    {880, 400},
+    {784, 200},
+    {880, 400},
+};
+
+note_t inGameMelody3[] = {
+    {659, 300},
+    {784, 300},
+    {880, 300},
+    {987, 600},
+    {880, 300},
+    {987, 600},
+};
+
+note_t inGameMelody4[] = {
+    {523, 200},
+    {659, 200},
+    {784, 200},
+    {880, 400},
+    {784, 200},
+    {880, 400},
+};
+
+note_t inGameMelody5[] = {
+    {523, 300},
+    {659, 300},
+    {784, 300},
+    {880, 600},
+};
+
+note_t inGameMelody6[] = {
+    {523, 400},
+    {659, 400},
+    {784, 400},
+    {880, 800},
+};
+
+note_t victoryMelody1[] = {
+    {784, 400},
+    {987, 400},
+    {1175, 400},
+    {1397, 800},
+};
+
+note_t victoryMelody2[] = {
+    {523, 300},
+    {659, 300},
+    {784, 300},
+    {880, 600},
+};
+
+note_t victoryMelody3[] = {
+    {587, 300},
+    {698, 300},
+    {784, 300},
+    {880, 600},
+};
+
+note_t victoryMelody4[] = {
+    {784, 100},
+    {932, 100},
+    {1046, 100},
+    {1174, 200},
+    {1397, 200},
+    {1568, 100},
+    {1865, 100},
+    {2093, 200},
+    {2349, 200},
+    {3136, 400},
+};
+
+note_t victoryMelody5[] = {
+    {659, 100},
+    {784, 100},
+    {988, 100},
+    {1174, 200},
+    {1318, 200},
+    {1760, 100},
+    {1976, 100},
+    {2093, 200},
+    {2637, 200},
+    {3136, 400},
+};
+
+note_t victoryMelody6[] = {
+	{523, 100},
+	{622, 100},
+	{784, 100},
+	{880, 200},
+	{1046, 200},
+	{1174, 100},
+	{1568, 100},
+	{1760, 200},
+	{2093, 200},
+	{2637, 400},
+};
+
+note_t defeatMelody1[] = {
+    {392, 200},
+    {294, 200},
+    {262, 200},
+    {196, 400},
+};
+
+note_t defeatMelody2[] = {
+    {523, 300},
+    {392, 300},
+    {294, 300},
+    {233, 600},
+};
+
+note_t defeatMelody3[] = {
+    {349, 300},
+    {294, 300},
+    {233, 300},
+    {196, 600},
+};
+
+note_t melody[] = {
+    {440, 500},
+    {523, 500},
+    {587, 500},
+    {659, 500},
+};
 
 /* USER CODE END PV */
 
@@ -67,14 +356,48 @@ QueueHandle_t game_queue;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
-//static void MX_SPI1_Init(void);
-//static void MX_TIM2_Init(void);
+static void MX_SPI1_Init(void);
+static void MX_TIM2_Init(void);
+static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+/*void PlayTone(uint16_t frequency, uint16_t duration) {
+    __HAL_TIM_SET_AUTORELOAD(&htim3, 1000000 / frequency); // Calcula el período en función de la frecuencia
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 50); // Duty cycle del 50% (puedes ajustarlo según sea necesario)
+    HAL_Delay(duration);
+}*/
+
+void PlayTone(uint16_t frequency, uint16_t duration) {
+    SetTone(frequency); // Configura la frecuencia antes de la duración
+
+    HAL_Delay(duration);
+
+    // Detén la salida PWM al final de la duración del tono
+    HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
+}
+
+void SetTone(uint16_t frequency) {
+    if (frequency == 0) {
+        // Si la frecuencia es 0, deshabilita la salida PWM
+        HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
+    } else {
+        // Configura la frecuencia y el ciclo de trabajo para generar el tono
+        __HAL_TIM_SET_AUTORELOAD(&htim3, 1000000 / frequency);
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 50); // Duty cycle del 50% (puedes ajustarlo según sea necesario)
+        HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1); // Inicia la salida PWM
+    }
+}
+
+void PlayMelody(note_t *melody, int numNotes) {
+    for (int i = 0; i < numNotes; i++) {
+        PlayTone(melody[i].frequency, melody[i].duration);
+    }
+}
 
 static void main_task(void *pvParameters){
 
@@ -270,7 +593,7 @@ static void joysticks_task(void *pvParameters){
 static void test_task(void *pvParameters){
 
 	//char MSG[] = "Hola mundo MAX7219 ";
-
+/*
 	DOT_MATRIX_Init(&hspi1);
 
 	for(uint8_t i=0; i<32; i++){
@@ -323,6 +646,27 @@ static void test_task(void *pvParameters){
 			vTaskSuspend(NULL);
 		}
 
+	}*/
+	while(1){
+		// happyBirthdayMelody
+		// jingleBellsMelody
+		// twinkleTwinkleMelody
+		// marioBrosMelody
+		// harryPotterMelody
+//		powerOnMelody1
+//		powerOnMelody2
+//		powerOnMelody3
+//		inGameMelody1
+//		inGameMelody2
+//		inGameMelody3
+//		victoryMelody1
+//		victoryMelody2
+//		victoryMelody3
+//		defeatMelody1
+//		defeatMelody2
+//		defeatMelody3
+		PlayMelody(victoryMelody6, (sizeof(victoryMelody6)/sizeof(note_t)));
+		vTaskDelay(500/portTICK_PERIOD_MS);
 	}
 }
 
@@ -377,14 +721,16 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C1_Init();
-//  MX_SPI1_Init();
-//  MX_TIM2_Init();
+  MX_SPI1_Init();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
   joysticks_queue = xQueueCreate(1, sizeof(uint8_t));
   game_queue = xQueueCreate(1, sizeof(uint8_t));
 
   lcd_init(&hi2c1);
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 /*
   xTaskCreate(main_task,
 			  "main_task",
@@ -507,83 +853,142 @@ static void MX_I2C1_Init(void)
   * @param None
   * @retval None
   */
-//static void MX_SPI1_Init(void)
-//{
-//
-//  /* USER CODE BEGIN SPI1_Init 0 */
+static void MX_SPI1_Init(void)
+{
+
+  /* USER CODE BEGIN SPI1_Init 0 */
 ////
-//  /* USER CODE END SPI1_Init 0 */
-//
-//  /* USER CODE BEGIN SPI1_Init 1 */
+  /* USER CODE END SPI1_Init 0 */
+
+  /* USER CODE BEGIN SPI1_Init 1 */
 ////
-//  /* USER CODE END SPI1_Init 1 */
-//  /* SPI1 parameter configuration*/
-//  hspi1.Instance = SPI1;
-//  hspi1.Init.Mode = SPI_MODE_MASTER;
-//  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-//  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-//  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-//  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-//  hspi1.Init.NSS = SPI_NSS_SOFT;
-//  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
-//  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-//  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-//  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-//  hspi1.Init.CRCPolynomial = 10;
-//  if (HAL_SPI_Init(&hspi1) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-//  /* USER CODE BEGIN SPI1_Init 2 */
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI1_Init 2 */
 ////
-//  /* USER CODE END SPI1_Init 2 */
-//
-//}
+  /* USER CODE END SPI1_Init 2 */
+
+}
 
 /**
   * @brief TIM2 Initialization Function
   * @param None
   * @retval None
   */
-//static void MX_TIM2_Init(void)
-//{
-//
-//  /* USER CODE BEGIN TIM2_Init 0 */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
 //////
-//  /* USER CODE END TIM2_Init 0 */
-//
-//  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-//  TIM_MasterConfigTypeDef sMasterConfig = {0};
-//
-//  /* USER CODE BEGIN TIM2_Init 1 */
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
 //////
-//  /* USER CODE END TIM2_Init 1 */
-//  htim2.Instance = TIM2;
-//  htim2.Init.Prescaler = 0;
-//  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-//  htim2.Init.Period = 65535;
-//  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-//  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-//  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-//  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-//  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-//  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-//  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-//  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-//  /* USER CODE BEGIN TIM2_Init 2 */
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 0;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 65535;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
 //////
-//  /* USER CODE END TIM2_Init 2 */
-//
-//}
+  /* USER CODE END TIM2_Init 2 */
+
+}
+
+/**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 107;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 20;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
+  HAL_TIM_MspPostInit(&htim3);
+
+}
 
 /**
   * @brief GPIO Initialization Function
