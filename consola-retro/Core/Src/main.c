@@ -93,9 +93,6 @@ static void main_task(void *pvParameters){
 		STATE_GAME_0_MENU_SHOW,
 		STATE_GAME_0_MENU_HANDLE,
 		STATE_GAME_0_PLAY,
-		STATE_GAME_0_PAUSE_SHOW,
-		STATE_GAME_0_PAUSE_HANDLE,
-		STATE_GAME_0_OVER,
 		STATE_GAME_0_RULES_SHOW,
 		STATE_GAME_0_RULES_HANDLE,
 		STATE_GAME_0_RECORDS_SHOW,
@@ -104,9 +101,6 @@ static void main_task(void *pvParameters){
 		STATE_GAME_1_MENU_SHOW,
 		STATE_GAME_1_MENU_HANDLE,
 		STATE_GAME_1_PLAY,
-		STATE_GAME_1_PAUSE_SHOW,
-		STATE_GAME_1_PAUSE_HANDLE,
-		STATE_GAME_1_OVER,
 		STATE_GAME_1_RULES_SHOW,
 		STATE_GAME_1_RULES_HANDLE,
 		STATE_GAME_1_RECORDS_SHOW,
@@ -115,8 +109,6 @@ static void main_task(void *pvParameters){
 		STATE_GAME_2_MENU_SHOW,
 		STATE_GAME_2_MENU_HANDLE,
 		STATE_GAME_2_PLAY,
-		STATE_GAME_2_PAUSE,
-		STATE_GAME_2_OVER,
 		STATE_GAME_2_RULES_SHOW,
 		STATE_GAME_2_RULES_HANDLE,
 		STATE_GAME_2_RECORDS_SHOW,
@@ -125,8 +117,6 @@ static void main_task(void *pvParameters){
 		STATE_GAME_3_MENU_SHOW,
 		STATE_GAME_3_MENU_HANDLE,
 		STATE_GAME_3_PLAY,
-		STATE_GAME_3_PAUSE,
-		STATE_GAME_3_OVER,
 		STATE_GAME_3_RULES_SHOW,
 		STATE_GAME_3_RULES_HANDLE,
 		STATE_GAME_3_RECORDS_SHOW,
@@ -135,7 +125,7 @@ static void main_task(void *pvParameters){
 		TEST_DIE
 	} main_state_t;
 
-	static main_state_t main_state = STATE_WELCOME_SHOW;// STATE_WELCOME_SHOW;
+	static main_state_t main_state = STATE_WELCOME_SHOW;
 	static main_state_t next_state;
 	static uint32_t start_ticks, delay_ticks;
 
@@ -222,11 +212,10 @@ static void main_task(void *pvParameters){
 			}
 			break;
 		case STATE_GAME_0_PLAY:
-			if(menu_game_0_play()){
+			if(menu_game_play(0, "        PONG        ")){
 				main_state = TEST_DIE;
 			}
 			break;
-
 		case STATE_GAME_1_MENU_SHOW:
 			if(lcd_progressive_print("       TETRIS       ",
 									 "Instrucciones del ju",
@@ -237,15 +226,24 @@ static void main_task(void *pvParameters){
 			}
 			break;
 		case STATE_GAME_1_MENU_HANDLE:
-			switch(menu_game_handle()){ // por ahora vuelvo en todos los casos...
+			switch(menu_game_handle()){
 			case 1: // jugar
+				main_state = STATE_GAME_1_PLAY;
+				break;
 			case 2: // reglas
+				main_state = STATE_GAME_1_RULES_SHOW;
+				break;
 			case 3: // puntajes
 				main_state = TEST_DIE;
 				break;
 			case 4: // volver
 				main_state = STATE_WELCOME_CLEAR;
 				break;
+			}
+			break;
+		case STATE_GAME_1_PLAY:
+			if(menu_game_play(1, "       TETRIS       ")){
+				main_state = TEST_DIE;
 			}
 			break;
 		case STATE_GAME_2_MENU_SHOW:
@@ -258,13 +256,24 @@ static void main_task(void *pvParameters){
 			}
 			break;
 		case STATE_GAME_2_MENU_HANDLE:
-			switch(menu_game_handle()){ // por ahora vuelvo en todos los casos...
+			switch(menu_game_handle()){
 			case 1: // jugar
+				main_state = STATE_GAME_2_PLAY;
+				break;
 			case 2: // reglas
+				main_state = STATE_GAME_2_RULES_SHOW;
+				break;
 			case 3: // puntajes
-			case 4: // volver
 				main_state = TEST_DIE;
 				break;
+			case 4: // volver
+				main_state = STATE_WELCOME_CLEAR;
+				break;
+			}
+			break;
+		case STATE_GAME_2_PLAY:
+			if(menu_game_play(2, "       SNAKE        ")){
+				main_state = TEST_DIE;
 			}
 			break;
 		case STATE_GAME_3_MENU_SHOW:
@@ -277,13 +286,24 @@ static void main_task(void *pvParameters){
 			}
 			break;
 		case STATE_GAME_3_MENU_HANDLE:
-			switch(menu_game_handle()){ // por ahora vuelvo en todos los casos...
+			switch(menu_game_handle()){
 			case 1: // jugar
+				main_state = STATE_GAME_3_PLAY;
+				break;
 			case 2: // reglas
+				main_state = STATE_GAME_3_RULES_SHOW;
+				break;
 			case 3: // puntajes
-			case 4: // volver
 				main_state = TEST_DIE;
 				break;
+			case 4: // volver
+				main_state = STATE_WELCOME_CLEAR;
+				break;
+			}
+			break;
+		case STATE_GAME_3_PLAY:
+			if(menu_game_play(3, "       SPACE        ")){
+				main_state = TEST_DIE;
 			}
 			break;
 		case TEST_DIE:
@@ -377,7 +397,7 @@ static void test_task(void *pvParameters){
 	}*/
 }
 
-void game_task(void *pvParameters){
+void two_player_game_task(void *pvParameters){
 
 	typedef enum{
 		STATE_PLAYING,
@@ -442,6 +462,70 @@ void game_task(void *pvParameters){
 				}
 				if(game_data == PLAYER_1_PAUSE){
 					game_data = PLAYER_1_PAUSE;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+					taskYIELD();
+				}
+			}
+			break;
+		}
+	}
+}
+
+void single_player_game_task(void *pvParameters){
+
+	typedef enum{
+		STATE_PLAYING,
+		STATE_PAUSE
+	}game_status_t;
+
+	static game_status_t game_status = STATE_PLAYING;
+
+	uint8_t game_data;
+	uint8_t joystick;
+
+	while(1){
+
+		switch(game_status){
+		case STATE_PLAYING:
+			if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+				if(joystick == JOYSTICK_1_UP){
+					game_data = SINGLE_PLAYER_POINT;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+				}
+				if(joystick == JOYSTICK_2_UP){
+					game_data = SINGLE_PLAYER_LIVE;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+				}
+				if(joystick == JOYSTICK_1_RIGHT){
+					game_data = SINGLE_PLAYER_WIN;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+					vTaskDelete(NULL);
+				}
+				if(joystick == JOYSTICK_2_RIGHT){
+					game_data = SINGLE_PLAYER_LOST;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+					vTaskDelete(NULL);
+				}
+				if(joystick == JOYSTICK_1_PULS || joystick == JOYSTICK_2_PULS){
+					xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+					game_data = SINGLE_PLAYER_PAUSE; // por ahora manejo indistintamente las pausas
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+					game_status = STATE_PAUSE;
+					taskYIELD();
+				}
+			}
+			break;
+		case STATE_PAUSE:
+			if(pdTRUE == xQueueReceive(game_queue, &game_data, 0)){
+				if(game_data == GAME_RESUME){
+					game_status = STATE_PLAYING;
+				}
+				if(game_data == GAME_OVER || game_data == GAME_RESET){
+					game_status = STATE_PLAYING;
+					vTaskDelete(NULL);
+				}
+				if(game_data == SINGLE_PLAYER_PAUSE){
+					game_data = SINGLE_PLAYER_PAUSE;
 					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 					taskYIELD();
 				}

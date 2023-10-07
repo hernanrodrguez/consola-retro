@@ -19,17 +19,20 @@
 #define PLAYER_2_PAUSE 		4
 #define PLAYER_1_WIN    	5
 #define PLAYER_2_WIN 		6
-#define SINGLE_PLAYER_WIN   7
-#define SINGLE_PLAYER_LOST	8
-#define GAME_RESUME			9
-#define GAME_RESET			10
-#define GAME_OVER			11
+#define SINGLE_PLAYER_POINT 7
+#define SINGLE_PLAYER_LIVE  8
+#define SINGLE_PLAYER_PAUSE 9
+#define SINGLE_PLAYER_WIN   10
+#define SINGLE_PLAYER_LOST	11
+#define GAME_RESUME			12
+#define GAME_RESET			13
+#define GAME_OVER			14
 
 uint8_t menu_handle(void);
 uint8_t menu_game_handle(void);
 uint8_t menu_pause_handle(void);
 uint8_t menu_gameover_handle(void);
-uint8_t menu_game_0_play(void);
+uint8_t menu_game_play(uint8_t game, const char *text);
 void menu_blink(uint8_t option, const char *text);
 void menu_blink_option(uint8_t option, const char *text);
 

@@ -57,7 +57,8 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 
-void game_task(void *pvParameters);
+void single_player_game_task(void *pvParameters);
+void two_player_game_task(void *pvParameters);
 
 /* USER CODE END EFP */
 

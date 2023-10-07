@@ -169,7 +169,7 @@ uint8_t menu_handle(void){
 	return 0;
 }
 
-uint8_t menu_game_0_play(void){
+uint8_t menu_game_play(uint8_t game, const char* text){
 	typedef enum{
 		STATE_COUNTDOWN_SHOW,
 		STATE_COUNTDOWN_RESUME_SHOW,
@@ -178,11 +178,13 @@ uint8_t menu_game_0_play(void){
 		STATE_PAUSE_SHOW,
 		STATE_PAUSE_HANDLE,
 		STATE_GAMEOVER_SHOW,
+		STATE_GAMEOVER_WIN_SHOW,
+		STATE_GAMEOVER_LOST_SHOW,
 		STATE_GAMEOVER_HANDLE
 	}game_play_t;
 
 	static uint32_t seconds=0, minutes=0;
-	static uint32_t score_1=0, score_2=0;
+	static uint32_t score_1=0, score_2=0, score=0, lives=5;
 	static uint32_t start_ticks=0;
 	static int32_t countdown=3;
 	static game_play_t game_play = STATE_COUNTDOWN_SHOW;
@@ -190,7 +192,7 @@ uint8_t menu_game_0_play(void){
 
 	switch(game_play){
 	case STATE_COUNTDOWN_SHOW:
-		if(lcd_progressive_print("        PONG        ",
+		if(lcd_progressive_print(text,
 								 "El juego comienza en",
 								 "         3          ",
 								 "                    ",
@@ -201,7 +203,7 @@ uint8_t menu_game_0_play(void){
 		}
 		break;
 	case STATE_COUNTDOWN_RESUME_SHOW:
-		if(lcd_progressive_print("        PONG        ",
+		if(lcd_progressive_print(text,
 								 "El juego continua en",
 								 "         3          ",
 								 "                    ",
@@ -225,19 +227,39 @@ uint8_t menu_game_0_play(void){
 				lcd_set_cursor(2, 9);
 				lcd_char('0');
 			} else if(countdown<0){
-				lcd_print("        PONG        ",
-						  "  Partida en juego  ",
-						  "   P1:00     P2:00  ",
-						  "        00:00       ");
-				lcd_print_score(score_1, score_2);
+				if(game == 0){ // el pong es el unico juego 1v1
+					lcd_print(text,
+							  "  Partida en juego  ",
+							  "   P1:00     P2:00  ",
+							  "        00:00       ");
+					lcd_print_score(score_1, score_2);
+				} else {
+					lcd_print(text,
+							  "  Partida en juego  ",
+							  "   Pts:00  Vidas:5  ",
+							  "        00:00       ");
+					lcd_print_pts_lives(score, lives);
+				}
 				if(seconds == 0 && minutes == 0){ // juego nuevo
-					if( pdPASS == xTaskCreate(game_task,
-											  "game_task",
-											  configMINIMAL_STACK_SIZE,
-											  NULL,
-											  1,
-											  NULL) ){
-						game_play = STATE_PLAYING_HANDLE;
+					// aca diferenciar el tipo de juego a comenzar y arrancar distintos tasks
+					if(game == 0){ // juego de a 2
+						if( pdPASS == xTaskCreate(two_player_game_task,
+												  "two_player_game_task",
+												  configMINIMAL_STACK_SIZE,
+												  NULL,
+												  1,
+												  NULL) ){
+							game_play = STATE_PLAYING_HANDLE;
+						}
+					} else { // juego individual
+						if( pdPASS == xTaskCreate(single_player_game_task,
+												  "single_player_game_task",
+												  configMINIMAL_STACK_SIZE,
+												  NULL,
+												  1,
+												  NULL) ){
+							game_play = STATE_PLAYING_HANDLE;
+						}
 					}
 				} else {
 					game_play = STATE_PLAYING_HANDLE;
@@ -248,6 +270,12 @@ uint8_t menu_game_0_play(void){
 	case STATE_PLAYING_HANDLE:
 		if(pdTRUE == xQueueReceive(game_queue, &game_data, 0)){
 			switch(game_data){
+			case SINGLE_PLAYER_POINT:
+				score++;
+				break;
+			case SINGLE_PLAYER_LIVE:
+				lives--;
+				break;
 			case PLAYER_1_POINT:
 				score_1++;
 				break;
@@ -256,17 +284,28 @@ uint8_t menu_game_0_play(void){
 				break;
 			case PLAYER_1_PAUSE:
 			case PLAYER_2_PAUSE:
+			case SINGLE_PLAYER_PAUSE:
 				game_play = STATE_PAUSE_SHOW;
 				break;
 			case PLAYER_1_WIN:
 			case PLAYER_2_WIN:
 				game_play = STATE_GAMEOVER_SHOW;
 				break;
+			case SINGLE_PLAYER_WIN:
+				game_play = STATE_GAMEOVER_WIN_SHOW;
+				break;
+			case SINGLE_PLAYER_LOST:
+				game_play = STATE_GAMEOVER_LOST_SHOW;
+				break;
 			case GAME_OVER:
 				return 1;
 				break;
 			}
-			lcd_print_score(score_1, score_2);
+			if(game == 0){
+				lcd_print_score(score_1, score_2);
+			} else {
+				lcd_print_pts_lives(score, lives);
+			}
 		}
 		if(HAL_GetTick() - start_ticks > ONE_SECOND){
 			seconds++;
@@ -279,7 +318,7 @@ uint8_t menu_game_0_play(void){
 		}
 		break;
 	case STATE_PAUSE_SHOW:
-		if(lcd_progressive_print("        PONG        ",
+		if(lcd_progressive_print(text,
 								 "  Partida en pausa  ",
 								 " Reanudar  Reiniciar",
 								 " Puntajes    Salir  ",
@@ -292,7 +331,6 @@ uint8_t menu_game_0_play(void){
 			case 1:
 				game_data = GAME_RESUME;
 				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-
 				game_play = STATE_COUNTDOWN_RESUME_SHOW;
 				break;
 			case 2:
@@ -300,6 +338,8 @@ uint8_t menu_game_0_play(void){
 				minutes=0;
 				score_1=0;
 				score_2=0;
+				score=0;
+				lives=5;
 				game_data = GAME_RESET;
 				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 				game_play = STATE_COUNTDOWN_SHOW;
@@ -308,16 +348,35 @@ uint8_t menu_game_0_play(void){
 			case 4: // salir
 				game_data = GAME_OVER;
 				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-				game_play = STATE_GAMEOVER_SHOW;
+				if(game==0){
+					game_play = STATE_GAMEOVER_SHOW;
+				} else {
+					game_play = STATE_GAMEOVER_LOST_SHOW;
+				}
+
 				break;
 			}
 		break;
 		case STATE_GAMEOVER_SHOW:
-			lcd_print("        PONG        ",
+			lcd_print(text,
 					  " Partida finalizada ",
 					  "   P1:00     P2:00  ",
 					  " Reiniciar   Salir  ");
-			lcd_print_score(score_1, score_2); // TODO: resolver mejor esto
+			lcd_print_score(score_1, score_2);
+			game_play = STATE_GAMEOVER_HANDLE;
+			break;
+		case STATE_GAMEOVER_WIN_SHOW:
+			lcd_print(text,
+					  "  Felicitaciones!   ",
+					  " Ganaste la partida!",
+					  " Reiniciar   Salir  ");
+			game_play = STATE_GAMEOVER_HANDLE;
+			break;
+		case STATE_GAMEOVER_LOST_SHOW:
+			lcd_print(text,
+					  "   Buen intento!    ",
+					  " Segui participando ",
+					  " Reiniciar   Salir  ");
 			game_play = STATE_GAMEOVER_HANDLE;
 			break;
 		case STATE_GAMEOVER_HANDLE:
@@ -328,6 +387,8 @@ uint8_t menu_game_0_play(void){
 				minutes=0;
 				score_1=0;
 				score_2=0;
+				score=0;
+				lives=5;
 
 				game_play = STATE_COUNTDOWN_SHOW;
 				break;
@@ -336,6 +397,8 @@ uint8_t menu_game_0_play(void){
 				minutes=0;
 				score_1=0;
 				score_2=0;
+				score=0;
+				lives=5;
 
 				game_play = STATE_COUNTDOWN_SHOW;
 				return 1;

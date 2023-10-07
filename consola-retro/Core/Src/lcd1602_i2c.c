@@ -264,6 +264,22 @@ void lcd_print_score(uint8_t score_1, uint8_t score_2){
 	lcd_char(print_num);
 }
 
+void lcd_print_pts_lives(uint8_t score, uint8_t lives){
+	char print_num;
+
+	print_num = ((score/10)%10)+'0';
+	lcd_set_cursor(2, 7);
+	lcd_char(print_num);
+
+	print_num = (score%10)+'0';
+	lcd_set_cursor(2, 8);
+	lcd_char(print_num);
+
+	print_num = lives + '0';
+	lcd_set_cursor(2, 17);
+	lcd_char(print_num);
+}
+
 void lcd_print(const char *line0, const char *line1, const char *line2, const char *line3) {
 	lcd_set_cursor(0, 0);
 	for(uint8_t i=0; i<20; i++) {
