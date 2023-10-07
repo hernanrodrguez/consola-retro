@@ -29,10 +29,11 @@ uint8_t menu_game_handle(void){
 
 	switch(menu_game_state){
 	case STATE_PLAY:
-		menu_blink(0, "  Jugar   ");
+		menu_blink(0, " Jugar    ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
-			menu_blink_option(0, "  Jugar   ");
+			menu_blink_option(0, " Jugar    ");
 			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
 				menu_game_state = STATE_PLAY;
 				return STATE_PLAY+1;
 			} else if(joystick == JOYSTICK_1_RIGHT){
@@ -47,6 +48,7 @@ uint8_t menu_game_handle(void){
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
 			menu_blink_option(1, "  Reglas  ");
 			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
 				menu_game_state = STATE_PLAY;
 				return STATE_RULES+1;
 			} else if(joystick == JOYSTICK_1_LEFT){
@@ -61,6 +63,7 @@ uint8_t menu_game_handle(void){
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
 			menu_blink_option(2, "  Puntajes");
 			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
 				menu_game_state = STATE_PLAY;
 				return STATE_SCORE+1;
 			} else if(joystick == JOYSTICK_1_RIGHT){
@@ -75,6 +78,7 @@ uint8_t menu_game_handle(void){
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
 			menu_blink_option(3, "  Volver  ");
 			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
 				menu_game_state = STATE_PLAY;
 				return STATE_BACK+1;
 			} else if(joystick == JOYSTICK_1_LEFT){
@@ -105,6 +109,7 @@ uint8_t menu_handle(void){
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
 			menu_blink_option(0, "  Pong    ");
 			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
 				menu_state = STATE_GAME_0;
 				return STATE_GAME_0+1;
 			} else if(joystick == JOYSTICK_1_RIGHT){
@@ -119,6 +124,7 @@ uint8_t menu_handle(void){
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
 			menu_blink_option(1, "  Tetris  ");
 			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
 				menu_state = STATE_GAME_0;
 				return STATE_GAME_1+1;
 			} else if(joystick == JOYSTICK_1_LEFT){
@@ -133,6 +139,7 @@ uint8_t menu_handle(void){
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
 			menu_blink_option(2, "  Snake   ");
 			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
 				menu_state = STATE_GAME_0;
 				return STATE_GAME_2+1;
 			} else if(joystick == JOYSTICK_1_RIGHT){
@@ -147,6 +154,7 @@ uint8_t menu_handle(void){
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
 			menu_blink_option(3, "  Space   ");
 			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
 				menu_state = STATE_GAME_0;
 				return STATE_GAME_3+1;
 			} else if(joystick == JOYSTICK_1_LEFT){
@@ -161,12 +169,16 @@ uint8_t menu_handle(void){
 	return 0;
 }
 
-uint8_t menu_game_play(void){
+uint8_t menu_game_0_play(void){
 	typedef enum{
 		STATE_COUNTDOWN_SHOW,
+		STATE_COUNTDOWN_RESUME_SHOW,
 		STATE_COUNTDOWN_HANDLE,
 		STATE_PLAYING_HANDLE,
-		STATE_GAMEOVER
+		STATE_PAUSE_SHOW,
+		STATE_PAUSE_HANDLE,
+		STATE_GAMEOVER_SHOW,
+		STATE_GAMEOVER_HANDLE
 	}game_play_t;
 
 	static uint32_t seconds=0, minutes=0;
@@ -184,6 +196,18 @@ uint8_t menu_game_play(void){
 								 "                    ",
 								 FOUR_LINES)){
 			game_play = STATE_COUNTDOWN_HANDLE;
+			countdown=3;
+			start_ticks = HAL_GetTick();
+		}
+		break;
+	case STATE_COUNTDOWN_RESUME_SHOW:
+		if(lcd_progressive_print("        PONG        ",
+								 "El juego continua en",
+								 "         3          ",
+								 "                    ",
+								 FOUR_LINES)){
+			game_play = STATE_COUNTDOWN_HANDLE;
+			countdown=3;
 			start_ticks = HAL_GetTick();
 		}
 		break;
@@ -205,7 +229,19 @@ uint8_t menu_game_play(void){
 						  "  Partida en juego  ",
 						  "   P1:00     P2:00  ",
 						  "        00:00       ");
-				game_play = STATE_PLAYING_HANDLE;
+				lcd_print_score(score_1, score_2);
+				if(seconds == 0 && minutes == 0){ // juego nuevo
+					if( pdPASS == xTaskCreate(game_task,
+											  "game_task",
+											  configMINIMAL_STACK_SIZE,
+											  NULL,
+											  1,
+											  NULL) ){
+						game_play = STATE_PLAYING_HANDLE;
+					}
+				} else {
+					game_play = STATE_PLAYING_HANDLE;
+				}
 			}
 		}
 		break;
@@ -217,6 +253,14 @@ uint8_t menu_game_play(void){
 				break;
 			case PLAYER_2_POINT:
 				score_2++;
+				break;
+			case PLAYER_1_PAUSE:
+			case PLAYER_2_PAUSE:
+				game_play = STATE_PAUSE_SHOW;
+				break;
+			case PLAYER_1_WIN:
+			case PLAYER_2_WIN:
+				game_play = STATE_GAMEOVER_SHOW;
 				break;
 			case GAME_OVER:
 				return 1;
@@ -232,6 +276,186 @@ uint8_t menu_game_play(void){
 			}
 			lcd_print_time(minutes, seconds);
 			start_ticks = HAL_GetTick();
+		}
+		break;
+	case STATE_PAUSE_SHOW:
+		if(lcd_progressive_print("        PONG        ",
+								 "  Partida en pausa  ",
+								 " Reanudar  Reiniciar",
+								 " Puntajes    Salir  ",
+								 FOUR_LINES)){
+			game_play = STATE_PAUSE_HANDLE;
+		}
+		break;
+	case STATE_PAUSE_HANDLE:
+		switch(menu_pause_handle()){
+			case 1:
+				game_data = GAME_RESUME;
+				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+
+				game_play = STATE_COUNTDOWN_RESUME_SHOW;
+				break;
+			case 2:
+				seconds=0;
+				minutes=0;
+				score_1=0;
+				score_2=0;
+				game_data = GAME_RESET;
+				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+				game_play = STATE_COUNTDOWN_SHOW;
+				break;
+			case 3: // puntajes TODO: no se si vale la pena, creo que es un bardo
+			case 4: // salir
+				game_data = GAME_OVER;
+				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+				game_play = STATE_GAMEOVER_SHOW;
+				break;
+			}
+		break;
+		case STATE_GAMEOVER_SHOW:
+			lcd_print("        PONG        ",
+					  " Partida finalizada ",
+					  "   P1:00     P2:00  ",
+					  " Reiniciar   Salir  ");
+			lcd_print_score(score_1, score_2); // TODO: resolver mejor esto
+			game_play = STATE_GAMEOVER_HANDLE;
+			break;
+		case STATE_GAMEOVER_HANDLE:
+			switch(menu_gameover_handle()){
+			case 1: // volver a jugar
+				// reinicio los puntajes y eso
+				seconds=0;
+				minutes=0;
+				score_1=0;
+				score_2=0;
+
+				game_play = STATE_COUNTDOWN_SHOW;
+				break;
+			case 2: // salir
+				seconds=0;
+				minutes=0;
+				score_1=0;
+				score_2=0;
+
+				game_play = STATE_COUNTDOWN_SHOW;
+				return 1;
+				break;
+			}
+			break;
+	}
+	return 0;
+}
+
+uint8_t menu_gameover_handle(void){
+	typedef enum{
+		STATE_RESET,
+		STATE_EXIT
+	}gameover_state_t;
+
+	static gameover_state_t gameover_state = STATE_RESET;
+	uint8_t joystick;
+
+	switch(gameover_state){
+	case STATE_RESET:
+		menu_blink(2, " Reiniciar");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			menu_blink_option(2, " Reiniciar");
+			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+				gameover_state = STATE_RESET;
+				return STATE_RESET+1;
+			} else if(joystick == JOYSTICK_1_RIGHT){
+				gameover_state = STATE_EXIT;
+			}
+		}
+		break;
+	case STATE_EXIT:
+		menu_blink(3, "   Salir  ");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			menu_blink_option(3, "   Salir  ");
+			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+				gameover_state = STATE_RESET;
+				return STATE_EXIT+1;
+			} else if(joystick == JOYSTICK_1_LEFT){
+				gameover_state = STATE_RESET;
+			}
+		}
+		break;
+	}
+	return 0;
+}
+
+uint8_t menu_pause_handle(void){
+	typedef enum{
+		STATE_CONTINUE,
+		STATE_RESET,
+		STATE_SCORES,
+		STATE_EXIT
+	}pause_state_t;
+
+	static pause_state_t pause_state = STATE_CONTINUE;
+	uint8_t joystick;
+
+	switch(pause_state){
+	case STATE_CONTINUE:
+		menu_blink(0, " Reanudar ");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			menu_blink_option(0, " Reanudar ");
+			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+				pause_state = STATE_CONTINUE;
+				return STATE_CONTINUE+1;
+			} else if(joystick == JOYSTICK_1_RIGHT){
+				pause_state = STATE_RESET;
+			} else if(joystick == JOYSTICK_1_DOWN){
+				pause_state = STATE_SCORES;
+			}
+		}
+		break;
+	case STATE_RESET:
+		menu_blink(1, " Reiniciar");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			menu_blink_option(1, " Reiniciar");
+			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+				pause_state = STATE_CONTINUE;
+				return STATE_RESET+1;
+			} else if(joystick == JOYSTICK_1_LEFT){
+				pause_state = STATE_CONTINUE;
+			} else if(joystick == JOYSTICK_1_DOWN){
+				pause_state = STATE_EXIT;
+			}
+		}
+		break;
+	case STATE_SCORES:
+		menu_blink(2, " Puntajes ");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			menu_blink_option(2, " Puntajes ");
+			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+				pause_state = STATE_CONTINUE;
+				return STATE_SCORES+1;
+			} else if(joystick == JOYSTICK_1_RIGHT){
+				pause_state = STATE_EXIT;
+			} else if(joystick == JOYSTICK_1_UP){
+				pause_state = STATE_CONTINUE;
+			}
+		}
+		break;
+	case STATE_EXIT:
+		menu_blink(3, "   Salir  ");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			menu_blink_option(3, "   Salir  ");
+			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+				pause_state = STATE_CONTINUE;
+				return STATE_EXIT+1;
+			} else if(joystick == JOYSTICK_1_LEFT){
+				pause_state = STATE_SCORES;
+			} else if(joystick == JOYSTICK_1_UP){
+				pause_state = STATE_RESET;
+			}
 		}
 		break;
 	}

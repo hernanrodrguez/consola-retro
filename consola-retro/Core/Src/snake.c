@@ -11,14 +11,16 @@
 #include "DOT_MATRIX.h"
 #include "FreeRTOS.h"
 #include "queue.h"
-
+/*
 const point_t SPAWN_POINT = (point_t){25, 15, JOYSTICK_1_RIGHT};
 
+// TODO: una funcion que me ponga los valores por defecto de snake y food
 point_t head, bend[500], food, body[MAX_BODY_LENGTH+1];
 snake_t snake = (snake_t){0, 0, DEFAULT_BODY_LENGTH + 1, SNAKE_DEFAULT_LIVES, 0};
 uint8_t game_on_flag_2 = 1; // TODO: revisar como lo habia resuelto con el pong
 
 extern QueueHandle_t joysticks_queue;
+extern QueueHandle_t game_queue;
 
 static uint32_t my_rand(void){
 	uint32_t y = HAL_GetTick();
@@ -29,82 +31,107 @@ static uint32_t my_rand(void){
 }
 
 uint8_t snake_play(void) {
+	typedef enum{
+		SNAKE_PLAYING,
+		SNAKE_PAUSE,
+		SNAKE_GAME_OVER
+	} snake_state_t;
 
 	uint8_t joystick;
+	static snake_state_t snake_state = SNAKE_PLAYING;
 
-	snake_generate_food();
-	snake.body_no = 0;
-	// Sleep(35);				// FPS: 1000 ms / 35 ms = 28.571428
-	// TODO: hace falta hacerle un sleep?
-	snake_move();
-	lose_a_life();
-	if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
-		switch(joystick) {
-			case JOYSTICK_1_LEFT:
-			case JOYSTICK_1_RIGHT:
-				switch(head.direction) {
-					case JOYSTICK_1_UP:
-					case JOYSTICK_1_DOWN:
-						bend[++snake.bend_no] = head;
-						head.direction = joystick; // TODO: revisar esto, seguro esta mal
-						switch(joystick) {
-							case JOYSTICK_1_LEFT:
-								head.x--;
-								break;
-							case JOYSTICK_1_RIGHT:
-								head.x++;
-								break;
-							case JOYSTICK_1_UP:
-								head.y--;
-								break;
-							case JOYSTICK_1_DOWN:
-								head.y++;
-						}
-				}
-				break;
-			case JOYSTICK_1_UP:
-			case JOYSTICK_1_DOWN:
-				switch(head.direction) {
-					case JOYSTICK_1_LEFT:
-					case JOYSTICK_1_RIGHT:
-						bend[++snake.bend_no] = head;
-						head.direction = joystick; // TODO: corregir, seguro esta mal
-						switch(joystick) {
-							case JOYSTICK_1_LEFT:
-								head.x--;
-								break;
-							case JOYSTICK_1_RIGHT:
-								head.x++;
-								break;
-							case JOYSTICK_1_UP:
-								head.y--;
-								break;
-							case JOYSTICK_1_DOWN:
-								head.y++;
-						}
-				}
-				break;
-			case JOYSTICK_1_PULS:		// pause the game, COMO MANEJO EL JUEGO PAUSADO? Otro estado en la mde general?
-				/*do {
-					key = getch();
-					if(key == ESCAPE_KEY) {
-						MoveCursorToXY(0, 5 + SNAKE_BOARD_HEIGHT);
-						exit(0);
+	switch(snake_state){
+	case SNAKE_PLAYING:
+		snake_generate_food();
+		snake.body_no = TEST_DEF;
+		// Sleep(35);				// FPS: 1000 ms / 35 ms = 28.571428
+		// TODO: hace falta hacerle un sleep?
+		snake_move();
+		lose_a_life();
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			switch(joystick) {
+				case JOYSTICK_1_LEFT:
+				case JOYSTICK_1_RIGHT:
+					switch(head.direction) {
+						case JOYSTICK_1_UP:
+						case JOYSTICK_1_DOWN:
+							bend[++snake.bend_no] = head;
+							head.direction = joystick; // TODO: revisar esto, seguro esta mal
+							switch(joystick) {
+								case JOYSTICK_1_LEFT:
+									head.x--;
+									break;
+								case JOYSTICK_1_RIGHT:
+									head.x++;
+									break;
+								case JOYSTICK_1_UP:
+									head.y--;
+									break;
+								case JOYSTICK_1_DOWN:
+									head.y++;
+							}
 					}
-				} while(key != PAUSE_KEY);*/
-				break;
-			//case JOYSTICK_1_PULS:	// exit the game
-				/*MoveCursorToXY(0, 5 + SNAKE_BOARD_HEIGHT);
-				exit(0);*/
-				// como manejo esto?
+					break;
+				case JOYSTICK_1_UP:
+				case JOYSTICK_1_DOWN:
+					switch(head.direction) {
+						case JOYSTICK_1_LEFT:
+						case JOYSTICK_1_RIGHT:
+							bend[++snake.bend_no] = head;
+							head.direction = joystick; // TODO: corregir, seguro esta mal
+							switch(joystick) {
+								case JOYSTICK_1_LEFT:
+									head.x--;
+									break;
+								case JOYSTICK_1_RIGHT:
+									head.x++;
+									break;
+								case JOYSTICK_1_UP:
+									head.y--;
+									break;
+								case JOYSTICK_1_DOWN:
+									head.y++;
+							}
+					}
+					break;
+				case JOYSTICK_1_PULS: // pausa
+					game_data = PLAYER_1_PAUSE;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+					snake_state = SNAKE_PAUSE;
+					break;
+			}
 		}
+		MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
+		if(game_on_flag_2){
+			return 0;
+		} else {
+			return 1;
+		}
+		break;
+	case SNAKE_PAUSE:
+		if(pdTRUE == xQueueReceive(game_queue, &game_data, 0)){
+			switch(game_data){
+			case GAME_RESUME:
+				snake_state = SNAKE_PLAYING; // TODO: countdown
+				break;
+			case GAME_RESET:
+				// TODO: un init para snake
+				// pong_init(); // TODO: countdown
+				snake_state = SNAKE_PLAYING;
+				break;
+			case GAME_OVER:
+				// TODO: hacer algun tipo de animacion con la pantalla de game over, mostrarla y morir.
+				break;
+			}
+		}
+		break;
+	case SNAKE_GAME_OVER:
+
+		break;
+
 	}
 
-	if(game_on_flag_2){
-		return 0;
-	} else {
-		return 1;
-	}
+
 	/*system("cls");
 	printf( "Game over!"			// game over
 			"\nBetter luck next time."
@@ -116,6 +143,8 @@ uint8_t snake_play(void) {
 			exit(0);
 	} while(key!='c' && key!='C');
 	system("cls");*/
+
+/*
 
 }
 
@@ -136,10 +165,12 @@ void lose_a_life() {
 			Sleep(80);
 			printf("\b ");
 			*/
-		}
+		/*}
 		// Aca indico la cantidad de vidas (hacerlo en el LCD)
 		/*MoveCursorToXY(57, 4);
 		printf("%hu", --snake.lives);*/
+
+		/*
 		if(!snake.lives) {
 			game_on_flag_2 = 0; // me quede sin vidas, termina el juego
 		}
@@ -261,4 +292,4 @@ void snake_generate_food() {
 		}
 		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, food.x, food.y, MATRIX_LED_ON); // shows the food on board with "F" (TODO: hacerla titilar para distinguirla?)
 	}
-}
+}*/

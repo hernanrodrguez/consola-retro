@@ -13,9 +13,9 @@
 
 #define SNAKE_DEFAULT_LIVES 3
 #define DEFAULT_BODY_LENGTH 5		// the initial length of the snake is 5, and it can reach a maximum length of 29
-#define MAX_BODY_LENGTH 29
-#define SNAKE_BOARD_WIDTH 60
-#define SNAKE_BOARD_HEIGHT 20
+#define MAX_BODY_LENGTH 15
+#define SNAKE_BOARD_WIDTH 31
+#define SNAKE_BOARD_HEIGHT 31
 
 // point struct definition
 typedef struct {
@@ -30,13 +30,9 @@ typedef struct {
 } snake_t;
 
 uint8_t snake_play(void);
-
 void lose_a_life(void);
-
 void snake_move (void);
-
 void snake_bend(void);
-
 void snake_generate_food(void);
 
 

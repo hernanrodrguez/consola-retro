@@ -57,6 +57,8 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 
+void game_task(void *pvParameters);
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -66,23 +68,25 @@ void Error_Handler(void);
 #define SS_SD_GPIO_Port GPIOA
 #define SS_LED_Pin GPIO_PIN_4
 #define SS_LED_GPIO_Port GPIOA
-#define JOYSTICK_2_DOWN_Pin GPIO_PIN_12
-#define JOYSTICK_2_DOWN_GPIO_Port GPIOB
-#define JOYSTICK_2_UP_Pin GPIO_PIN_13
-#define JOYSTICK_2_UP_GPIO_Port GPIOB
-#define JOYSTICK_2_LEFT_Pin GPIO_PIN_14
-#define JOYSTICK_2_LEFT_GPIO_Port GPIOB
-#define JOYSTICK_2_RIGHT_Pin GPIO_PIN_15
+#define JOYSTICK_2_RIGHT_Pin GPIO_PIN_12
 #define JOYSTICK_2_RIGHT_GPIO_Port GPIOB
-#define JOYSTICK_1_RIGHT_Pin GPIO_PIN_8
-#define JOYSTICK_1_RIGHT_GPIO_Port GPIOA
-#define JOYSTICK_1_LEFT_Pin GPIO_PIN_9
-#define JOYSTICK_1_LEFT_GPIO_Port GPIOA
-#define JOYSTICK_1_UP_Pin GPIO_PIN_10
-#define JOYSTICK_1_UP_GPIO_Port GPIOA
-#define JOYSTICK_1_DOWN_Pin GPIO_PIN_11
+#define JOYSTICK_2_LEFT_Pin GPIO_PIN_13
+#define JOYSTICK_2_LEFT_GPIO_Port GPIOB
+#define JOYSTICK_2_UP_Pin GPIO_PIN_14
+#define JOYSTICK_2_UP_GPIO_Port GPIOB
+#define JOYSTICK_2_DOWN_Pin GPIO_PIN_15
+#define JOYSTICK_2_DOWN_GPIO_Port GPIOB
+#define JOYSTICK_1_DOWN_Pin GPIO_PIN_8
 #define JOYSTICK_1_DOWN_GPIO_Port GPIOA
+#define JOYSTICK_1_UP_Pin GPIO_PIN_9
+#define JOYSTICK_1_UP_GPIO_Port GPIOA
+#define JOYSTICK_1_LEFT_Pin GPIO_PIN_10
+#define JOYSTICK_1_LEFT_GPIO_Port GPIOA
+#define JOYSTICK_1_RIGHT_Pin GPIO_PIN_11
+#define JOYSTICK_1_RIGHT_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
+
+#define TEST_DEF 0
 
 /* USER CODE END Private defines */
 

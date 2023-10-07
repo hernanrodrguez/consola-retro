@@ -7,6 +7,7 @@
 
 #include "pong.h"
 #include "main.h"
+#include "menu.h"
 #include "joystick.h"
 #include "DOT_MATRIX.h"
 #include "FreeRTOS.h"
@@ -17,6 +18,7 @@ player_t player_2;
 ball_t ball;
 
 extern QueueHandle_t joysticks_queue;
+extern QueueHandle_t game_queue;
 
 static uint32_t my_rand(void){
 	uint32_t y = HAL_GetTick();
@@ -42,73 +44,90 @@ void pong_init(void){
 
 }
 
-//void pong_opening_screen(void);
-
 uint8_t pong_play(void){
+	typedef enum{
+		PONG_PLAYING,
+		PONG_PLAYER_1_PAUSE,
+		PONG_PLAYER_2_PAUSE,
+		PONG_GAME_OVER
+	} pong_state_t;
+
 	uint8_t joystick;
+	uint8_t game_data;
+	static pong_state_t pong_state = PONG_PLAYING;
 
-	if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)) {
-		switch(joystick) {
-			case JOYSTICK_1_UP:
-				if(player_1.y > 6) {
-					MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, player_1.y + PADDLE_1_LENGTH - 1, MATRIX_LED_OFF);
-					MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, --player_1.y, MATRIX_LED_ON);
-				}
-				break;
-			case JOYSTICK_1_DOWN:
-				if(player_1.y + PADDLE_1_LENGTH < 5 + PONG_BOARD_HEIGHT) {
-					MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, player_1.y, MATRIX_LED_OFF);
-					MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, (++player_1.y) + PADDLE_1_LENGTH - 1, MATRIX_LED_ON);
-				}
-				break;
-			case JOYSTICK_2_UP:
-				if(player_2.y > 6) {
-					MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, player_2.y + PADDLE_2_LENGTH - 1, MATRIX_LED_OFF);
-					MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, --player_2.y, MATRIX_LED_ON);
-				}
-				break;
-			case JOYSTICK_2_DOWN:
-				if(player_2.y + PADDLE_2_LENGTH < 5 + PONG_BOARD_HEIGHT) {
-					MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, player_2.y, MATRIX_LED_OFF);
-					MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, (++player_2.y) + PADDLE_2_LENGTH - 1, MATRIX_LED_ON);
-				}
-				break;
-			/*case JOYSTICK_1_PULS:
-			case JOYSTICK_2_PULS: // pausa
-				do {
-					key = getch();
-					if(key == ESCAPE_KEY) {
-						MoveCursorToXY(0, 5 + PONG_BOARD_HEIGHT);
-						exit(0);
+	switch(pong_state){
+	case PONG_PLAYING:
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)) {
+			switch(joystick) {
+				case JOYSTICK_1_UP:
+					if(player_1.y > 6) {
+						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, player_1.y + PADDLE_1_LENGTH - 1, MATRIX_LED_OFF);
+						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, --player_1.y, MATRIX_LED_ON);
 					}
-				} while(key != PAUSE_KEY);
-				break;
-			case ESCAPE_KEY:	// exit the game
-				MoveCursorToXY(0, 5 + PONG_BOARD_HEIGHT);
-				exit(0);*/
+					break;
+				case JOYSTICK_1_DOWN:
+					if(player_1.y + PADDLE_1_LENGTH < 5 + PONG_BOARD_HEIGHT) {
+						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, player_1.y, MATRIX_LED_OFF);
+						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, (++player_1.y) + PADDLE_1_LENGTH - 1, MATRIX_LED_ON);
+					}
+					break;
+				case JOYSTICK_2_UP:
+					if(player_2.y > 6) {
+						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, player_2.y + PADDLE_2_LENGTH - 1, MATRIX_LED_OFF);
+						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, --player_2.y, MATRIX_LED_ON);
+					}
+					break;
+				case JOYSTICK_2_DOWN:
+					if(player_2.y + PADDLE_2_LENGTH < 5 + PONG_BOARD_HEIGHT) {
+						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, player_2.y, MATRIX_LED_OFF);
+						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, (++player_2.y) + PADDLE_2_LENGTH - 1, MATRIX_LED_ON);
+					}
+					break;
+				case JOYSTICK_1_PULS: // pausa
+					game_data = PLAYER_1_PAUSE;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+					pong_state = PONG_PLAYER_1_PAUSE;
+					break;
+				case JOYSTICK_2_PULS: // pausa
+					game_data = PLAYER_2_PAUSE;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+					pong_state = PONG_PLAYER_2_PAUSE;
+					break;
+			}
 		}
-	}
-	pong_move_ball();
-	pong_change_ball_direction();
-	MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
+		pong_move_ball();
+		pong_change_ball_direction();
+		MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
 
-	if(player_1.score == END_SCORE || player_2.score == END_SCORE){
-		return 1;
-	} else {
-		return 0;
+		if(player_1.score == END_SCORE || player_2.score == END_SCORE){
+			pong_state = PONG_GAME_OVER;
+		}
+		break;
+	case PONG_PLAYER_1_PAUSE:
+	case PONG_PLAYER_2_PAUSE:
+		// TODO: por ahora manejo la pausa con el user 1
+		if(pdTRUE == xQueueReceive(game_queue, &game_data, 0)){
+			switch(game_data){
+			case GAME_RESUME:
+				pong_state = PONG_PLAYING; // TODO: countdown
+				break;
+			case GAME_RESET:
+				pong_init(); // TODO: countdown
+				pong_state = PONG_PLAYING;
+				break;
+			case GAME_OVER:
+				// TODO: hacer algun tipo de animacion con la pantalla de game over, mostrarla y morir.
+				break;
+			}
+		}
+		break;
+	case PONG_GAME_OVER:
+		// mostrar alguna animacion
+		vTaskDelete(NULL); // chau chau adios...
+		break;
 	}
-
-	/*system("cls");
-	printf( "Game over Player %d!"				// game over
-			"\nBetter luck next time."
-			"\n(Press C to continue...)", (player1.score == END_SCORE) + 1);
-	char key;
-	do {
-		key = getch();
-		if(key == ESCAPE_KEY)
-			exit(0);
-	} while(key!='c' && key!='C');
-	system("cls");*/
+	return 0; // TODO: lo saco a la mierda esto? si hago el delete task
 }
 
 void pong_print_board(void){

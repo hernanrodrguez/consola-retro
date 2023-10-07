@@ -63,6 +63,14 @@ uint8_t read_joysticks(void){
 	debounce_check(&deb_down_2, HAL_GPIO_ReadPin(JOYSTICK_2_DOWN_GPIO_Port, JOYSTICK_2_DOWN_Pin));
 	debounce_check(&deb_puls_2, read_puls(JOYSTICK_2));
 
+	if(debounce_edge(&deb_puls_2)){
+		return JOYSTICK_2_PULS;
+	}
+
+	if(debounce_edge(&deb_puls_1)){
+		return JOYSTICK_1_PULS;
+	}
+
 	if(debounce_edge(&deb_right_1)){
 		return JOYSTICK_1_RIGHT;
 	}
@@ -77,10 +85,6 @@ uint8_t read_joysticks(void){
 
 	if(debounce_edge(&deb_down_1)){
 		return JOYSTICK_1_DOWN;
-	}
-
-	if(debounce_edge(&deb_puls_1)){
-		return JOYSTICK_1_PULS;
 	}
 
 	if(debounce_edge(&deb_right_2)){
@@ -98,10 +102,6 @@ uint8_t read_joysticks(void){
 
 	if(debounce_edge(&deb_down_2)){
 		return JOYSTICK_2_DOWN;
-	}
-
-	if(debounce_edge(&deb_puls_2)){
-		return JOYSTICK_2_PULS;
 	}
 
 	return NONE;

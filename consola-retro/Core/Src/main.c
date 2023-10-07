@@ -85,25 +85,57 @@ static void main_task(void *pvParameters){
 		STATE_WELCOME_SHOW,
 		STATE_WELCOME_DELAY,
 		STATE_WELCOME_CLEAR,
+
 		STATE_MENU_SHOW,
 		STATE_MENU_HANDLE,
 		STATE_MENU_CLEAR,
-		STATE_GAME_0_SHOW,
-		STATE_GAME_0_HANDLE,
+
+		STATE_GAME_0_MENU_SHOW,
+		STATE_GAME_0_MENU_HANDLE,
 		STATE_GAME_0_PLAY,
-		STATE_GAME_1_SHOW,
-		STATE_GAME_1_HANDLE,
+		STATE_GAME_0_PAUSE_SHOW,
+		STATE_GAME_0_PAUSE_HANDLE,
+		STATE_GAME_0_OVER,
+		STATE_GAME_0_RULES_SHOW,
+		STATE_GAME_0_RULES_HANDLE,
+		STATE_GAME_0_RECORDS_SHOW,
+		STATE_GAME_0_RECORDS_HANDLE,
+
+		STATE_GAME_1_MENU_SHOW,
+		STATE_GAME_1_MENU_HANDLE,
 		STATE_GAME_1_PLAY,
-		STATE_GAME_2_SHOW,
-		STATE_GAME_2_HANDLE,
+		STATE_GAME_1_PAUSE_SHOW,
+		STATE_GAME_1_PAUSE_HANDLE,
+		STATE_GAME_1_OVER,
+		STATE_GAME_1_RULES_SHOW,
+		STATE_GAME_1_RULES_HANDLE,
+		STATE_GAME_1_RECORDS_SHOW,
+		STATE_GAME_1_RECORDS_HANDLE,
+
+		STATE_GAME_2_MENU_SHOW,
+		STATE_GAME_2_MENU_HANDLE,
 		STATE_GAME_2_PLAY,
-		STATE_GAME_3_SHOW,
-		STATE_GAME_3_HANDLE,
+		STATE_GAME_2_PAUSE,
+		STATE_GAME_2_OVER,
+		STATE_GAME_2_RULES_SHOW,
+		STATE_GAME_2_RULES_HANDLE,
+		STATE_GAME_2_RECORDS_SHOW,
+		STATE_GAME_2_RECORDS_HANDLE,
+
+		STATE_GAME_3_MENU_SHOW,
+		STATE_GAME_3_MENU_HANDLE,
 		STATE_GAME_3_PLAY,
+		STATE_GAME_3_PAUSE,
+		STATE_GAME_3_OVER,
+		STATE_GAME_3_RULES_SHOW,
+		STATE_GAME_3_RULES_HANDLE,
+		STATE_GAME_3_RECORDS_SHOW,
+		STATE_GAME_3_RECORDS_HANDLE,
+
 		TEST_DIE
 	} main_state_t;
 
-	static main_state_t main_state = STATE_GAME_0_PLAY;// STATE_WELCOME_SHOW;
+	static main_state_t main_state = STATE_WELCOME_SHOW;// STATE_WELCOME_SHOW;
 	static main_state_t next_state;
 	static uint32_t start_ticks, delay_ticks;
 
@@ -115,7 +147,7 @@ static void main_task(void *pvParameters){
 									 "       RETRO        ",
 									 "                    ",
 									 FOUR_LINES)){
-				delay_ticks = 3000;
+				delay_ticks = 2000;
 				start_ticks = HAL_GetTick();
 				main_state = STATE_WELCOME_DELAY;
 			}
@@ -143,19 +175,19 @@ static void main_task(void *pvParameters){
 			switch(menu_handle()){
 			case 1:
 				main_state = STATE_MENU_CLEAR;
-				next_state = STATE_GAME_0_SHOW;
+				next_state = STATE_GAME_0_MENU_SHOW;
 				break;
 			case 2:
 				main_state = STATE_MENU_CLEAR;
-				next_state = STATE_GAME_1_SHOW;
+				next_state = STATE_GAME_1_MENU_SHOW;
 				break;
 			case 3:
 				main_state = STATE_MENU_CLEAR;
-				next_state = STATE_GAME_2_SHOW;
+				next_state = STATE_GAME_2_MENU_SHOW;
 				break;
 			case 4:
 				main_state = STATE_MENU_CLEAR;
-				next_state = STATE_GAME_3_SHOW;
+				next_state = STATE_GAME_3_MENU_SHOW;
 				break;
 			}
 			break;
@@ -164,61 +196,68 @@ static void main_task(void *pvParameters){
 				main_state = next_state;
 			}
 			break;
-		case STATE_GAME_0_SHOW:
+		case STATE_GAME_0_MENU_SHOW:
 			if(lcd_progressive_print("        PONG        ",
 									 "Instrucciones del ju",
 									 " Jugar      Reglas  ",
 									 " Puntajes   Volver  ",
 									 FOUR_LINES)){
-				main_state = STATE_GAME_0_HANDLE;
+				main_state = STATE_GAME_0_MENU_HANDLE;
 			}
 			break;
-		case STATE_GAME_0_HANDLE:
+		case STATE_GAME_0_MENU_HANDLE:
 			switch(menu_game_handle()){ // por ahora vuelvo en todos los casos...
 			case 1: // jugar
 				main_state = STATE_GAME_0_PLAY;
 				break;
 			case 2: // reglas
+				main_state = STATE_GAME_0_RULES_SHOW;
+				break;
 			case 3: // puntajes
-			case 4: // volver
 				main_state = TEST_DIE;
+				break;
+			case 4: // volver
+				main_state = STATE_WELCOME_CLEAR;
 				break;
 			}
 			break;
 		case STATE_GAME_0_PLAY:
-			if(menu_game_play()){
+			if(menu_game_0_play()){
 				main_state = TEST_DIE;
 			}
 			break;
-		case STATE_GAME_1_SHOW:
+
+		case STATE_GAME_1_MENU_SHOW:
 			if(lcd_progressive_print("       TETRIS       ",
 									 "Instrucciones del ju",
 									 " Jugar      Reglas  ",
 									 " Puntajes   Volver  ",
 									 FOUR_LINES)){
-				main_state = STATE_GAME_1_HANDLE;
+				main_state = STATE_GAME_1_MENU_HANDLE;
 			}
 			break;
-		case STATE_GAME_1_HANDLE:
+		case STATE_GAME_1_MENU_HANDLE:
 			switch(menu_game_handle()){ // por ahora vuelvo en todos los casos...
 			case 1: // jugar
 			case 2: // reglas
 			case 3: // puntajes
-			case 4: // volver
 				main_state = TEST_DIE;
+				break;
+			case 4: // volver
+				main_state = STATE_WELCOME_CLEAR;
 				break;
 			}
 			break;
-		case STATE_GAME_2_SHOW:
+		case STATE_GAME_2_MENU_SHOW:
 			if(lcd_progressive_print("       SNAKE        ",
 									 "Instrucciones del ju",
 									 " Jugar      Reglas  ",
 									 " Puntajes   Volver  ",
 									 FOUR_LINES)){
-				main_state = STATE_GAME_2_HANDLE;
+				main_state = STATE_GAME_2_MENU_HANDLE;
 			}
 			break;
-		case STATE_GAME_2_HANDLE:
+		case STATE_GAME_2_MENU_HANDLE:
 			switch(menu_game_handle()){ // por ahora vuelvo en todos los casos...
 			case 1: // jugar
 			case 2: // reglas
@@ -228,16 +267,16 @@ static void main_task(void *pvParameters){
 				break;
 			}
 			break;
-		case STATE_GAME_3_SHOW:
+		case STATE_GAME_3_MENU_SHOW:
 			if(lcd_progressive_print("       SPACE        ",
 									 "Instrucciones del ju",
 									 " Jugar      Reglas  ",
 									 " Puntajes   Volver  ",
 									 FOUR_LINES)){
-				main_state = STATE_GAME_3_HANDLE;
+				main_state = STATE_GAME_3_MENU_HANDLE;
 			}
 			break;
-		case STATE_GAME_3_HANDLE:
+		case STATE_GAME_3_MENU_HANDLE:
 			switch(menu_game_handle()){ // por ahora vuelvo en todos los casos...
 			case 1: // jugar
 			case 2: // reglas
@@ -273,84 +312,142 @@ static void joysticks_task(void *pvParameters){
 static void test_task(void *pvParameters){
 
 	//char MSG[] = "Hola mundo MAX7219 ";
-/*
+
 	DOT_MATRIX_Init(&hspi1);
 
-	for(uint8_t i=0; i<32; i++){
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 0, i, 1);
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31, i, 1);
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 0, 1);
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 31, 1);
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, i, 1);
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31-i, i, 1);
+	while(1) {
+
+		for(uint8_t i=0; i<32; i++){
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 0, i, 1);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31, i, 1);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 0, 1);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 31, 1);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, i, 1);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31-i, i, 1);
+		}
+
+		MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
+		//MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
+		vTaskDelay(500/portTICK_PERIOD_MS);
+
+		for(uint8_t i=0; i<32; i++){
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 0, i, 0);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31, i, 0);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 0, 0);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 31, 0);
+		}
+
+		MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
+		MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
+		vTaskDelay(500/portTICK_PERIOD_MS);
+
+		for(uint8_t i=0; i<32; i++){
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 0, i, 1);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31, i, 1);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 0, 1);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 31, 1);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 15, 1);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 16, 1);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 15, i, 1);
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 16, i, 1);
+		}
+
+		MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
+		MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
+		vTaskDelay(500/portTICK_PERIOD_MS);
 	}
 
-	MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
-	//MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
-	vTaskDelay(500/portTICK_PERIOD_MS);
-
-	for(uint8_t i=0; i<32; i++){
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 0, i, 0);
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31, i, 0);
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 0, 0);
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 31, 0);
-	}
-
-	MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
-	MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
-	vTaskDelay(500/portTICK_PERIOD_MS);
-
-	for(uint8_t i=0; i<32; i++){
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 0, i, 1);
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31, i, 1);
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 0, 1);
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 31, 1);
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 15, 1);
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 16, 1);
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 15, i, 1);
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 16, i, 1);
-	}
-
-	MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
-	MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
-	vTaskDelay(500/portTICK_PERIOD_MS);
 
 
-	pong_init();
-	pong_print_board();
+	//pong_init();
+	//pong_print_board();
 
-
+/*
 	while(1){
 
 		if(pong_play()){
 			vTaskSuspend(NULL);
 		}
 
-	}*/
+	}
 	while(1){
 		//buzzer_play_melody(victoryMelody6, (sizeof(victoryMelody6)/sizeof(note_t)));
 		buzzer_test_melody();
 		vTaskDelay(500/portTICK_PERIOD_MS);
-	}
+	}*/
 }
 
-static void game_task(void *pvParameters){
+void game_task(void *pvParameters){
+
+	typedef enum{
+		STATE_PLAYING,
+		STATE_PAUSE
+	}game_status_t;
+
+	static game_status_t game_status = STATE_PLAYING;
 
 	uint8_t game_data;
+	uint8_t joystick;
 
 	while(1){
-		for(uint8_t i=0; i<10; i++){
-			vTaskDelay(1000/portTICK_PERIOD_MS);
-			game_data = PLAYER_1_POINT;
-			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-			vTaskDelay(1000/portTICK_PERIOD_MS);
-			game_data = PLAYER_2_POINT;
-			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-			vTaskDelay(1000/portTICK_PERIOD_MS);
+
+		switch(game_status){
+		case STATE_PLAYING:
+			if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+				if(joystick == JOYSTICK_1_UP){
+					game_data = PLAYER_1_POINT;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+				}
+				if(joystick == JOYSTICK_2_UP){
+					game_data = PLAYER_2_POINT;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+				}
+				if(joystick == JOYSTICK_1_RIGHT){
+					game_data = PLAYER_1_WIN;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+					vTaskDelete(NULL);
+				}
+				if(joystick == JOYSTICK_2_RIGHT){
+					game_data = PLAYER_2_WIN;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+					vTaskDelete(NULL);
+				}
+				if(joystick == JOYSTICK_1_DOWN){
+					game_data = SINGLE_PLAYER_WIN;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+					vTaskDelete(NULL);
+				}
+				if(joystick == JOYSTICK_2_DOWN){
+					game_data = SINGLE_PLAYER_LOST;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+					vTaskDelete(NULL);
+				}
+				if(joystick == JOYSTICK_1_PULS || joystick == JOYSTICK_2_PULS){
+					xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+					game_data = PLAYER_1_PAUSE; // por ahora manejo indistintamente las pausas
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+					game_status = STATE_PAUSE;
+					taskYIELD();
+				}
+			}
+			break;
+		case STATE_PAUSE:
+			if(pdTRUE == xQueueReceive(game_queue, &game_data, 0)){
+				if(game_data == GAME_RESUME){
+					game_status = STATE_PLAYING;
+				}
+				if(game_data == GAME_OVER || game_data == GAME_RESET){
+					game_status = STATE_PLAYING;
+					vTaskDelete(NULL);
+				}
+				if(game_data == PLAYER_1_PAUSE){
+					game_data = PLAYER_1_PAUSE;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+					taskYIELD();
+				}
+			}
+			break;
 		}
-		game_data = GAME_OVER;
-		xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-		vTaskDelete(NULL);
 	}
 }
 
@@ -395,7 +492,7 @@ int main(void)
 
   lcd_init(&hi2c1);
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
-/*
+
   xTaskCreate(main_task,
 			  "main_task",
 			  configMINIMAL_STACK_SIZE,
@@ -409,21 +506,21 @@ int main(void)
 			  NULL,
 			  1,
 			  NULL);
-
+/*
   xTaskCreate(game_task,
 			  "game_task",
 			  configMINIMAL_STACK_SIZE,
 			  NULL,
 			  1,
 			  NULL);
-*/
+
 
   xTaskCreate(test_task,
 			  "test_task",
 			  configMINIMAL_STACK_SIZE,
 			  NULL,
 			  1,
-			  NULL);
+			  NULL);*/
 
   vTaskStartScheduler();
 
