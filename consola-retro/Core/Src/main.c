@@ -528,13 +528,11 @@ void single_player_game_task(void *pvParameters){
 void pong_task(void *pvParameters){
 	DOT_MATRIX_Init(&hspi1);
 	pong_init();
-	pong_print_board();
 
 	while(1){
 		pong_play();
 	}
 }
-
 
 
 /* USER CODE END 0 */

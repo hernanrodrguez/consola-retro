@@ -28,6 +28,12 @@ static uint32_t my_rand(void){
 	return y;
 }
 
+static void regen_ball(void){
+	ball.x = (my_rand()%7) + 12;
+	ball.y = (my_rand()%20) + 5;
+	ball.direction = my_rand()%4;
+}
+
 void pong_init(void){
 
 	player_1.x = 0;
@@ -38,14 +44,14 @@ void pong_init(void){
 	player_2.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 2;
 	player_2.score = 0;
 
-	ball.x = (my_rand()%7) + 12;
-	ball.y = (my_rand()%20) + 5;
-	ball.direction = my_rand()%4;
+	regen_ball();
 
 }
 
 void pong_play(void){
 	typedef enum{
+		PONG_FIRST_PRINT,
+		PONG_COUNTDOWN,
 		PONG_PLAYING,
 		PONG_PLAYER_1_PAUSE,
 		PONG_PLAYER_2_PAUSE,
@@ -54,9 +60,20 @@ void pong_play(void){
 
 	uint8_t joystick;
 	uint8_t game_data;
-	static pong_state_t pong_state = PONG_PLAYING;
+	static pong_state_t pong_state = PONG_FIRST_PRINT;
 
 	switch(pong_state){
+	case PONG_FIRST_PRINT:
+		pong_print_board();
+		pong_state = PONG_COUNTDOWN;
+		break;
+	case PONG_COUNTDOWN:
+		if(pdTRUE == xQueueReceive(game_queue, &game_data, 0)){
+			if(game_data == GAME_START){
+				pong_state = PONG_PLAYING;
+			}
+		}
+		break;
 	case PONG_PLAYING:
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)) {
 			switch(joystick) {
@@ -103,19 +120,33 @@ void pong_play(void){
 		case 0: // no hay punto
 			MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
 			break;
+
 		case 1: // punto player1
 			MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
-			vTaskDelay(500/portTICK_PERIOD_MS);
+			ball_blink();
+			//vTaskDelay(500/portTICK_PERIOD_MS);
 			pong_print_board();
+
+			player_1.score++;
+			game_data = PLAYER_1_POINT;
+			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+
+			regen_ball();
 			break;
+
 		case 2: // punto player2
 			MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
-			vTaskDelay(500/portTICK_PERIOD_MS);
+			ball_blink();
+			//vTaskDelay(500/portTICK_PERIOD_MS);
 			pong_print_board();
+
+			player_2.score++;
+			game_data = PLAYER_2_POINT;
+			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+
+			regen_ball();
 			break;
 		}
-
-		//MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
 
 		if(player_1.score == END_SCORE){
 			game_data = PLAYER_1_WIN;
@@ -141,12 +172,12 @@ void pong_play(void){
 				pong_state = PONG_PLAYING; // TODO: countdown
 				break;
 			case GAME_RESET:
-				pong_state = PONG_PLAYING;
+				pong_state = PONG_FIRST_PRINT;
 				vTaskDelete(NULL);
 				break;
 			case GAME_OVER:
 				// TODO: hacer algun tipo de animacion con la pantalla de game over, mostrarla y morir.
-				pong_state = PONG_PLAYING;
+				pong_state = PONG_FIRST_PRINT;
 				vTaskDelete(NULL);
 				break;
 			}
@@ -154,9 +185,20 @@ void pong_play(void){
 		break;
 	case PONG_GAME_OVER:
 		// TODO: mostrar alguna animacion
-		pong_state = PONG_PLAYING;
+		pong_state = PONG_FIRST_PRINT;
 		vTaskDelete(NULL); // chau chau adios...
 		break;
+	}
+}
+
+void ball_blink(void){
+	for(uint8_t i=0; i<3; i++){
+		vTaskDelay(100/portTICK_PERIOD_MS);
+		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, ball.x, ball.y, MATRIX_LED_OFF);
+		MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
+		vTaskDelay(100/portTICK_PERIOD_MS);
+		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, ball.x, ball.y, MATRIX_LED_ON);
+		MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
 	}
 }
 
@@ -196,39 +238,22 @@ void pong_move_ball(uint8_t touch){
 }
 
 uint8_t pong_change_ball_direction(void){
-	uint8_t game_data;
 
 	if(ball.y < 1 || ball.y > (PONG_BOARD_HEIGHT-1)) { // si toco borde inferior o superior
 		ball.direction += ball.direction<2 ? 2 : -2;
 	}
-	if(ball.x <= player_1.x /*+ 1*/) { // si toco al player1
+	if(ball.x <= player_1.x) { // si toco al player1
 		if(player_1.y <= ball.y && ball.y < player_1.y + PADDLE_1_LENGTH){
 			ball.direction += ball.direction%2 ? -1 : 1;
 			pong_move_ball(TOUCH);
-		} else {
-			//MATRIX_set_led(MATRIX_DISPLAY_UNIT1, ball.x, ball.y, MATRIX_LED_ON); // PUNTO!
-			//vTaskDelay(400/portTICK_PERIOD_MS); // hacer que parpadee la pelota y se muestre algun mensaje
-			ball.x = (my_rand()%7) + 12;
-			ball.y = (my_rand()%20) + 5;
-			ball.direction = my_rand()%4;
-			player_2.score++;
-			game_data = PLAYER_2_POINT;
-			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+		} else { // si toco el borde de player1, punto para player2
 			return 2;
 		}
-	} else if(ball.x >= player_2.x /*- 1*/) { // si toco al player2
+	} else if(ball.x >= player_2.x) { // si toco al player2
 		if(player_2.y <= ball.y && ball.y < player_2.y + PADDLE_2_LENGTH){
 			ball.direction += ball.direction%2 ? -1 : 1;
 			pong_move_ball(TOUCH);
-		} else {
-			//MATRIX_set_led(MATRIX_DISPLAY_UNIT1, ball.x, ball.y, MATRIX_LED_ON); // PUNTO!
-			//vTaskDelay(400/portTICK_PERIOD_MS); // hacer que parpadee la pelota y se muestre algun mensaje
-			ball.x = (my_rand()%7) + 12;
-			ball.y = (my_rand()%20) + 5;
-			ball.direction = my_rand()%4;
-			player_1.score++;
-			game_data = PLAYER_1_POINT;
-			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+		} else { // si toco el borde de player2, punto para player1
 			return 1;
 		}
 	}

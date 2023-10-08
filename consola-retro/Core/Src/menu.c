@@ -197,6 +197,14 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 								 "         3          ",
 								 "                    ",
 								 FOUR_LINES)){
+			if(game == 0){ // aca creo todos los tasks de los games
+				xTaskCreate(pong_task,
+							"pong_task",
+							configMINIMAL_STACK_SIZE,
+							NULL,
+							1,
+							NULL);
+			}
 			game_play = STATE_COUNTDOWN_HANDLE;
 			countdown=3;
 			start_ticks = HAL_GetTick();
@@ -241,28 +249,15 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 					lcd_print_pts_lives(score, lives);
 				}
 				if(seconds == 0 && minutes == 0){ // juego nuevo
-					// aca diferenciar el tipo de juego a comenzar y arrancar distintos tasks
-					if(game == 0){ // juego de a 2
-						if( pdPASS == xTaskCreate(pong_task,
-												  "pong_task",
-												  configMINIMAL_STACK_SIZE,
-												  NULL,
-												  1,
-												  NULL) ){
-							game_play = STATE_PLAYING_HANDLE;
-						}
-					} else { // juego individual
-						if( pdPASS == xTaskCreate(single_player_game_task,
-												  "single_player_game_task",
-												  configMINIMAL_STACK_SIZE,
-												  NULL,
-												  1,
-												  NULL) ){
-							game_play = STATE_PLAYING_HANDLE;
-						}
-					}
-				} else {
+					game_data = GAME_START;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 					game_play = STATE_PLAYING_HANDLE;
+					taskYIELD();
+				} else { // juego continua
+					game_data = GAME_RESUME;
+					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+					game_play = STATE_PLAYING_HANDLE;
+					taskYIELD();
 				}
 			}
 		}
@@ -329,17 +324,10 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 	case STATE_PAUSE_HANDLE:
 		switch(menu_pause_handle()){
 			case 1:
-				game_data = GAME_RESUME;
-				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 				game_play = STATE_COUNTDOWN_RESUME_SHOW;
 				break;
 			case 2:
-				seconds=0;
-				minutes=0;
-				score_1=0;
-				score_2=0;
-				score=0;
-				lives=5;
+				RESET_GAME_STATE();
 				game_data = GAME_RESET;
 				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 				game_play = STATE_COUNTDOWN_SHOW;
@@ -383,22 +371,15 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 			switch(menu_gameover_handle()){
 			case 1: // volver a jugar
 				// reinicio los puntajes y eso
-				seconds=0;
-				minutes=0;
-				score_1=0;
-				score_2=0;
-				score=0;
-				lives=5;
+				RESET_GAME_STATE();
+
+				game_data = GAME_RESET;
+				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 
 				game_play = STATE_COUNTDOWN_SHOW;
 				break;
 			case 2: // salir
-				seconds=0;
-				minutes=0;
-				score_1=0;
-				score_2=0;
-				score=0;
-				lives=5;
+				RESET_GAME_STATE();
 
 				game_play = STATE_COUNTDOWN_SHOW;
 				return 1;

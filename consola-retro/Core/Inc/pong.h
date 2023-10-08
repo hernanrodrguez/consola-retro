@@ -36,5 +36,6 @@ void pong_play(void);
 void pong_print_board(void);
 void pong_move_ball(uint8_t touch);
 uint8_t pong_change_ball_direction(void);
+void ball_blink(void);
 
 #endif /* INC_PONG_H_ */

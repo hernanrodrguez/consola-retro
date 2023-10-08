@@ -24,9 +24,13 @@
 #define SINGLE_PLAYER_PAUSE 9
 #define SINGLE_PLAYER_WIN   10
 #define SINGLE_PLAYER_LOST	11
-#define GAME_RESUME			12
-#define GAME_RESET			13
-#define GAME_OVER			14
+#define GAME_START			12
+#define GAME_RESUME			13
+#define GAME_RESET			14
+#define GAME_OVER			15
+
+#define RESET_GAME_STATE() seconds=0; minutes=0; score_1=0; score_2=0; score=0; lives=5
+
 
 uint8_t menu_handle(void);
 uint8_t menu_game_handle(void);
