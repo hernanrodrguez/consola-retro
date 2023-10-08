@@ -243,8 +243,8 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 				if(seconds == 0 && minutes == 0){ // juego nuevo
 					// aca diferenciar el tipo de juego a comenzar y arrancar distintos tasks
 					if(game == 0){ // juego de a 2
-						if( pdPASS == xTaskCreate(two_player_game_task,
-												  "two_player_game_task",
+						if( pdPASS == xTaskCreate(pong_task,
+												  "pong_task",
 												  configMINIMAL_STACK_SIZE,
 												  NULL,
 												  1,

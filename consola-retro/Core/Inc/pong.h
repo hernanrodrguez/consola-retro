@@ -29,7 +29,7 @@ typedef enum {
 } ball_direction_t;
 
 void pong_init(void);
-uint8_t pong_play(void);
+void pong_play(void);
 void pong_print_board(void);
 void pong_move_ball(void);
 void pong_change_ball_direction(void);

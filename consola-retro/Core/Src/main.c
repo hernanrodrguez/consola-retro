@@ -432,16 +432,6 @@ void two_player_game_task(void *pvParameters){
 					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 					vTaskDelete(NULL);
 				}
-				if(joystick == JOYSTICK_1_DOWN){
-					game_data = SINGLE_PLAYER_WIN;
-					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-					vTaskDelete(NULL);
-				}
-				if(joystick == JOYSTICK_2_DOWN){
-					game_data = SINGLE_PLAYER_LOST;
-					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-					vTaskDelete(NULL);
-				}
 				if(joystick == JOYSTICK_1_PULS || joystick == JOYSTICK_2_PULS){
 					xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
 					game_data = PLAYER_1_PAUSE; // por ahora manejo indistintamente las pausas
@@ -534,6 +524,18 @@ void single_player_game_task(void *pvParameters){
 		}
 	}
 }
+
+void pong_task(void *pvParameters){
+	DOT_MATRIX_Init(&hspi1);
+	pong_init();
+	pong_print_board();
+
+	while(1){
+		pong_play();
+	}
+}
+
+
 
 /* USER CODE END 0 */
 

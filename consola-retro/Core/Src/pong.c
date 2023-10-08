@@ -30,12 +30,12 @@ static uint32_t my_rand(void){
 
 void pong_init(void){
 
-	player_1.x = PONG_BOARD_WIDTH;
-	player_1.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 6;
+	player_1.x = 0;
+	player_1.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 2;
 	player_1.score = 0;
 
-	player_2.x = 0;
-	player_2.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 6;
+	player_2.x = PONG_BOARD_WIDTH;
+	player_2.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 2;
 	player_2.score = 0;
 
 	ball.x = PONG_BOARD_WIDTH/2 + 10;
@@ -44,7 +44,7 @@ void pong_init(void){
 
 }
 
-uint8_t pong_play(void){
+void pong_play(void){
 	typedef enum{
 		PONG_PLAYING,
 		PONG_PLAYER_1_PAUSE,
@@ -60,26 +60,26 @@ uint8_t pong_play(void){
 	case PONG_PLAYING:
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)) {
 			switch(joystick) {
-				case JOYSTICK_1_UP:
-					if(player_1.y > 6) {
+				case JOYSTICK_1_DOWN:
+					if(player_1.y > 0) {
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, player_1.y + PADDLE_1_LENGTH - 1, MATRIX_LED_OFF);
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, --player_1.y, MATRIX_LED_ON);
 					}
 					break;
-				case JOYSTICK_1_DOWN:
-					if(player_1.y + PADDLE_1_LENGTH < 5 + PONG_BOARD_HEIGHT) {
+				case JOYSTICK_1_UP:
+					if(player_1.y + PADDLE_1_LENGTH - 1 < PONG_BOARD_HEIGHT) {
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, player_1.y, MATRIX_LED_OFF);
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, (++player_1.y) + PADDLE_1_LENGTH - 1, MATRIX_LED_ON);
 					}
 					break;
-				case JOYSTICK_2_UP:
-					if(player_2.y > 6) {
+				case JOYSTICK_2_DOWN:
+					if(player_2.y > 0) {
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, player_2.y + PADDLE_2_LENGTH - 1, MATRIX_LED_OFF);
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, --player_2.y, MATRIX_LED_ON);
 					}
 					break;
-				case JOYSTICK_2_DOWN:
-					if(player_2.y + PADDLE_2_LENGTH < 5 + PONG_BOARD_HEIGHT) {
+				case JOYSTICK_2_UP:
+					if(player_2.y + PADDLE_2_LENGTH - 1 < PONG_BOARD_HEIGHT) {
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, player_2.y, MATRIX_LED_OFF);
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, (++player_2.y) + PADDLE_2_LENGTH - 1, MATRIX_LED_ON);
 					}
@@ -88,46 +88,62 @@ uint8_t pong_play(void){
 					game_data = PLAYER_1_PAUSE;
 					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 					pong_state = PONG_PLAYER_1_PAUSE;
+					taskYIELD();
 					break;
 				case JOYSTICK_2_PULS: // pausa
 					game_data = PLAYER_2_PAUSE;
 					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 					pong_state = PONG_PLAYER_2_PAUSE;
+					taskYIELD();
 					break;
 			}
 		}
 		pong_move_ball();
 		pong_change_ball_direction();
+
 		MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
 
-		if(player_1.score == END_SCORE || player_2.score == END_SCORE){
+		if(player_1.score == END_SCORE){
+			game_data = PLAYER_1_WIN;
+			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+			pong_state = PONG_GAME_OVER;
+		} else if(player_2.score == END_SCORE){
+			game_data = PLAYER_2_WIN;
+			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 			pong_state = PONG_GAME_OVER;
 		}
 		break;
 	case PONG_PLAYER_1_PAUSE:
 	case PONG_PLAYER_2_PAUSE:
-		// TODO: por ahora manejo la pausa con el user 1
 		if(pdTRUE == xQueueReceive(game_queue, &game_data, 0)){
 			switch(game_data){
+			case PLAYER_1_PAUSE:
+			case PLAYER_2_PAUSE:
+				game_data = PLAYER_1_PAUSE;
+				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+				taskYIELD();
+				break;
 			case GAME_RESUME:
 				pong_state = PONG_PLAYING; // TODO: countdown
 				break;
 			case GAME_RESET:
-				pong_init(); // TODO: countdown
 				pong_state = PONG_PLAYING;
+				vTaskDelete(NULL);
 				break;
 			case GAME_OVER:
 				// TODO: hacer algun tipo de animacion con la pantalla de game over, mostrarla y morir.
+				pong_state = PONG_PLAYING;
+				vTaskDelete(NULL);
 				break;
 			}
 		}
 		break;
 	case PONG_GAME_OVER:
-		// mostrar alguna animacion
+		// TODO: mostrar alguna animacion
+		pong_state = PONG_PLAYING;
 		vTaskDelete(NULL); // chau chau adios...
 		break;
 	}
-	return 0; // TODO: lo saco a la mierda esto? si hago el delete task
 }
 
 void pong_print_board(void){
@@ -138,7 +154,7 @@ void pong_print_board(void){
 		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, player_2.y + i, MATRIX_LED_ON);
 	}
 	MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
-	MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
+	//MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 }
 
 void pong_move_ball(void){
@@ -164,10 +180,12 @@ void pong_move_ball(void){
 }
 
 void pong_change_ball_direction(void){
-	if(ball.y < 1 || ball.y > (PONG_BOARD_HEIGHT-1)) {
+	uint8_t game_data;
+
+	if(ball.y < 1 || ball.y > (PONG_BOARD_HEIGHT-1)) { // si toco borde inferior o superior
 		ball.direction += ball.direction<2 ? 2 : -2;
 	}
-	if(ball.x <= player_1.x + 1) {
+	if(ball.x <= player_1.x + 1) { // si toco al player1
 		if(player_1.y <= ball.y && ball.y < player_1.y + PADDLE_1_LENGTH){
 			ball.direction += ball.direction%2 ? -1 : 1;
 		} else {
@@ -177,13 +195,10 @@ void pong_change_ball_direction(void){
 			ball.y = my_rand()%(PONG_BOARD_HEIGHT - 3) + 7;
 			ball.direction = my_rand()%4;
 			player_2.score++;
-			/*
-			if(++player_2.score == END_SCORE) {
-				game_on = 0; // termino el partido
-			}
-			*/
+			game_data = PLAYER_2_POINT;
+			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 		}
-	} else if(ball.x >= player_2.x - 1) {
+	} else if(ball.x >= player_2.x - 1) { // si toco al player2
 		if(player_2.y <= ball.y && ball.y < player_2.y + PADDLE_2_LENGTH){
 			ball.direction += ball.direction%2 ? -1 : 1;
 		} else {
@@ -193,11 +208,8 @@ void pong_change_ball_direction(void){
 			ball.y = my_rand()%(PONG_BOARD_HEIGHT - 3) + 7;
 			ball.direction = my_rand()%4;
 			player_1.score++;
-			/*
-			if(++player_1.score == END_SCORE){
-				game_on = 0;
-			}
-			*/
+			game_data = PLAYER_1_POINT;
+			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 		}
 	}
 }
