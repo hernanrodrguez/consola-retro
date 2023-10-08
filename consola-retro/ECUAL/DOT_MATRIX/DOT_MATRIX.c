@@ -587,5 +587,69 @@ void MATRIX_TMR_OVF_ISR(TIM_HandleTypeDef* htim)
 	}
 }
 
+void MATRIX_print_num(uint8_t au8_MATRIX_Instance, uint8_t num) {
+    uint8_t ancho = 5;
+    uint8_t alto = 8;
+
+    uint8_t centro_x = 16;
+    uint8_t centro_y = 16;
+
+    uint8_t x_inicio = centro_x - ancho / 2;
+    uint8_t y_inicio = centro_y - alto / 2;
+
+    uint8_t num1[8][5] = {
+		{1, 1, 1, 1, 1},
+		{0, 0, 1, 0, 0},
+		{0, 0, 1, 0, 0},
+		{0, 0, 1, 0, 0},
+		{0, 0, 1, 0, 0},
+		{0, 0, 1, 0, 1},
+		{0, 0, 1, 1, 0},
+		{0, 0, 1, 0, 0}
+    };
+
+    uint8_t num2[8][5] = {
+		{1, 1, 1, 1, 1},
+		{0, 0, 0, 0, 1},
+		{0, 0, 0, 1, 0},
+		{0, 0, 1, 0, 0},
+		{0, 1, 0, 0, 0},
+		{1, 0, 0, 0, 0},
+		{1, 0, 0, 0, 1},
+		{0, 1, 1, 1, 0}
+    };
+
+    uint8_t num3[8][5] = {
+		{0, 1, 1, 1, 1},
+		{1, 0, 0, 0, 0},
+		{1, 0, 0, 0, 0},
+		{1, 0, 0, 0, 0},
+		{0, 1, 1, 1, 0},
+		{0, 0, 1, 0, 0},
+		{0, 1, 0, 0, 0},
+		{1, 1, 1, 1, 1}
+    };
+
+    for (uint8_t i = 0; i < alto; i++) {
+        for (uint8_t j = 0; j < ancho; j++) {
+        	uint8_t estado_led;
+        	MATRIX_set_led(au8_MATRIX_Instance, x_inicio + j, y_inicio + i, estado_led);
+        	switch(num){
+        	case 1:
+        		estado_led = num1[i][j] == 1 ? MATRIX_LED_ON : MATRIX_LED_OFF;
+        		break;
+        	case 2:
+        		estado_led = num2[i][j] == 1 ? MATRIX_LED_ON : MATRIX_LED_OFF;
+        		break;
+        	case 3:
+        		estado_led = num3[i][j] == 1 ? MATRIX_LED_ON : MATRIX_LED_OFF;
+        		break;
+        	}
+        	MATRIX_set_led(au8_MATRIX_Instance, x_inicio + j, y_inicio + i, estado_led);
+        }
+    }
+    MATRIX_display_buffer(au8_MATRIX_Instance);
+}
+
 
 

@@ -37,11 +37,11 @@ static void regen_ball(void){
 void pong_init(void){
 
 	player_1.x = 0;
-	player_1.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 2;
+	player_1.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 1;
 	player_1.score = 0;
 
 	player_2.x = PONG_BOARD_WIDTH;
-	player_2.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 2;
+	player_2.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 1;
 	player_2.score = 0;
 
 	regen_ball();
@@ -69,8 +69,23 @@ void pong_play(void){
 		break;
 	case PONG_COUNTDOWN:
 		if(pdTRUE == xQueueReceive(game_queue, &game_data, 0)){
-			if(game_data == GAME_START){
+			switch(game_data){
+			case SEC_3:
+				MATRIX_print_num(MATRIX_DISPLAY_UNIT1, 3);
+				break;
+			case SEC_2:
+				MATRIX_print_num(MATRIX_DISPLAY_UNIT1, 2);
+				break;
+			case SEC_1:
+				MATRIX_print_num(MATRIX_DISPLAY_UNIT1, 1);
+				break;
+			case SEC_0:
+				MATRIX_print_num(MATRIX_DISPLAY_UNIT1, 0);
+				break;
+			case GAME_START:
+			case GAME_RESUME:
 				pong_state = PONG_PLAYING;
+				break;
 			}
 		}
 		break;
@@ -124,7 +139,6 @@ void pong_play(void){
 		case 1: // punto player1
 			MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
 			ball_blink();
-			//vTaskDelay(500/portTICK_PERIOD_MS);
 			pong_print_board();
 
 			player_1.score++;
@@ -137,7 +151,6 @@ void pong_play(void){
 		case 2: // punto player2
 			MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
 			ball_blink();
-			//vTaskDelay(500/portTICK_PERIOD_MS);
 			pong_print_board();
 
 			player_2.score++;
@@ -167,6 +180,9 @@ void pong_play(void){
 				game_data = PLAYER_1_PAUSE;
 				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 				taskYIELD();
+				break;
+			case GAME_COUNTDOWN:
+				pong_state = PONG_COUNTDOWN;
 				break;
 			case GAME_RESUME:
 				pong_state = PONG_PLAYING; // TODO: countdown

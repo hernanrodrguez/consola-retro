@@ -207,6 +207,8 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 			}
 			game_play = STATE_COUNTDOWN_HANDLE;
 			countdown=3;
+			game_data = SEC_3;
+			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 			start_ticks = HAL_GetTick();
 		}
 		break;
@@ -218,6 +220,9 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 								 FOUR_LINES)){
 			game_play = STATE_COUNTDOWN_HANDLE;
 			countdown=3;
+
+			game_data = SEC_3;
+			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 			start_ticks = HAL_GetTick();
 		}
 		break;
@@ -228,12 +233,21 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 			if(countdown==2){
 				lcd_set_cursor(2, 9);
 				lcd_char('2');
+
+				game_data = SEC_2;
+				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 			} else if(countdown==1){
 				lcd_set_cursor(2, 9);
 				lcd_char('1');
+
+				game_data = SEC_1;
+				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 			} else if(countdown==0){
 				lcd_set_cursor(2, 9);
 				lcd_char('0');
+
+				game_data = SEC_0;
+				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 			} else if(countdown<0){
 				if(game == 0){ // el pong es el unico juego 1v1
 					lcd_print(text,
@@ -324,6 +338,8 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 	case STATE_PAUSE_HANDLE:
 		switch(menu_pause_handle()){
 			case 1:
+				game_data = GAME_COUNTDOWN;
+				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 				game_play = STATE_COUNTDOWN_RESUME_SHOW;
 				break;
 			case 2:

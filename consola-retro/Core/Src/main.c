@@ -331,65 +331,21 @@ static void joysticks_task(void *pvParameters){
 
 static void test_task(void *pvParameters){
 
-	//char MSG[] = "Hola mundo MAX7219 ";
-
-	DOT_MATRIX_Init(&hspi1);
-
-	while(1) {
-
-		for(uint8_t i=0; i<32; i++){
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 0, i, 1);
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31, i, 1);
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 0, 1);
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 31, 1);
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, i, 1);
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31-i, i, 1);
-		}
-
-		MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
-		//MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
-		vTaskDelay(500/portTICK_PERIOD_MS);
-
-		for(uint8_t i=0; i<32; i++){
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 0, i, 0);
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31, i, 0);
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 0, 0);
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 31, 0);
-		}
-
-		MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
-		MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
-		vTaskDelay(500/portTICK_PERIOD_MS);
-
-		for(uint8_t i=0; i<32; i++){
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 0, i, 1);
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31, i, 1);
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 0, 1);
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 31, 1);
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 15, 1);
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 16, 1);
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 15, i, 1);
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 16, i, 1);
-		}
-
-		MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
-		MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
-		vTaskDelay(500/portTICK_PERIOD_MS);
-	}
-
-
-
-	//pong_init();
-	//pong_print_board();
-
-/*
 	while(1){
+		MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
+		MATRIX_print_num(MATRIX_DISPLAY_UNIT1, 3);
+		vTaskDelay(500/portTICK_PERIOD_MS);
 
-		if(pong_play()){
-			vTaskSuspend(NULL);
-		}
+		MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
+		MATRIX_print_num(MATRIX_DISPLAY_UNIT1, 2);
+		vTaskDelay(500/portTICK_PERIOD_MS);
 
+		MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
+		MATRIX_print_num(MATRIX_DISPLAY_UNIT1, 1);
+		vTaskDelay(500/portTICK_PERIOD_MS);
 	}
+
+	/*
 	while(1){
 		//buzzer_play_melody(victoryMelody6, (sizeof(victoryMelody6)/sizeof(note_t)));
 		buzzer_test_melody();
@@ -526,9 +482,7 @@ void single_player_game_task(void *pvParameters){
 }
 
 void pong_task(void *pvParameters){
-	DOT_MATRIX_Init(&hspi1);
 	pong_init();
-
 	while(1){
 		pong_play();
 	}
@@ -575,6 +529,7 @@ int main(void)
   game_queue = xQueueCreate(1, sizeof(uint8_t));
 
   lcd_init(&hi2c1);
+  DOT_MATRIX_Init(&hspi1);
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 
   xTaskCreate(main_task,
@@ -597,9 +552,9 @@ int main(void)
 			  NULL,
 			  1,
 			  NULL);
+*/
 
-
-  xTaskCreate(test_task,
+  /*xTaskCreate(test_task,
 			  "test_task",
 			  configMINIMAL_STACK_SIZE,
 			  NULL,
