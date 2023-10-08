@@ -38,9 +38,9 @@ void pong_init(void){
 	player_2.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 2;
 	player_2.score = 0;
 
-	ball.x = PONG_BOARD_WIDTH/2 + 10;
-	ball.y = PONG_BOARD_HEIGHT/2 + 5;
-	ball.direction = RIGHT_DOWN;
+	ball.x = (my_rand()%7) + 12;
+	ball.y = (my_rand()%20) + 5;
+	ball.direction = my_rand()%4;
 
 }
 
@@ -98,10 +98,24 @@ void pong_play(void){
 					break;
 			}
 		}
-		pong_move_ball();
-		pong_change_ball_direction();
+		pong_move_ball(NO_TOUCH);
+		switch(pong_change_ball_direction()){
+		case 0: // no hay punto
+			MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
+			break;
+		case 1: // punto player1
+			MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
+			vTaskDelay(500/portTICK_PERIOD_MS);
+			pong_print_board();
+			break;
+		case 2: // punto player2
+			MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
+			vTaskDelay(500/portTICK_PERIOD_MS);
+			pong_print_board();
+			break;
+		}
 
-		MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
+		//MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
 
 		if(player_1.score == END_SCORE){
 			game_data = PLAYER_1_WIN;
@@ -147,6 +161,7 @@ void pong_play(void){
 }
 
 void pong_print_board(void){
+	MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 	for(uint8_t i=0; i<PADDLE_1_LENGTH; i++) {
 		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, player_1.y + i, MATRIX_LED_ON);
 	}
@@ -154,11 +169,12 @@ void pong_print_board(void){
 		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, player_2.y + i, MATRIX_LED_ON);
 	}
 	MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
-	//MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 }
 
-void pong_move_ball(void){
-	MATRIX_set_led(MATRIX_DISPLAY_UNIT1, ball.x, ball.y, MATRIX_LED_OFF);
+void pong_move_ball(uint8_t touch){
+	if(touch){
+		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, ball.x, ball.y, MATRIX_LED_OFF);
+	}
 	switch(ball.direction) {
 		case RIGHT_UP:
 			ball.x++;
@@ -179,39 +195,44 @@ void pong_move_ball(void){
 	MATRIX_set_led(MATRIX_DISPLAY_UNIT1, ball.x, ball.y, MATRIX_LED_ON);
 }
 
-void pong_change_ball_direction(void){
+uint8_t pong_change_ball_direction(void){
 	uint8_t game_data;
 
 	if(ball.y < 1 || ball.y > (PONG_BOARD_HEIGHT-1)) { // si toco borde inferior o superior
 		ball.direction += ball.direction<2 ? 2 : -2;
 	}
-	if(ball.x <= player_1.x + 1) { // si toco al player1
+	if(ball.x <= player_1.x /*+ 1*/) { // si toco al player1
 		if(player_1.y <= ball.y && ball.y < player_1.y + PADDLE_1_LENGTH){
 			ball.direction += ball.direction%2 ? -1 : 1;
+			pong_move_ball(TOUCH);
 		} else {
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, ball.x, ball.y, MATRIX_LED_ON); // PUNTO!
-			vTaskDelay(400/portTICK_PERIOD_MS); // hacer que parpadee la pelota y se muestre algun mensaje
-			ball.x = PONG_BOARD_WIDTH/2 + 10;
-			ball.y = my_rand()%(PONG_BOARD_HEIGHT - 3) + 7;
+			//MATRIX_set_led(MATRIX_DISPLAY_UNIT1, ball.x, ball.y, MATRIX_LED_ON); // PUNTO!
+			//vTaskDelay(400/portTICK_PERIOD_MS); // hacer que parpadee la pelota y se muestre algun mensaje
+			ball.x = (my_rand()%7) + 12;
+			ball.y = (my_rand()%20) + 5;
 			ball.direction = my_rand()%4;
 			player_2.score++;
 			game_data = PLAYER_2_POINT;
 			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+			return 2;
 		}
-	} else if(ball.x >= player_2.x - 1) { // si toco al player2
+	} else if(ball.x >= player_2.x /*- 1*/) { // si toco al player2
 		if(player_2.y <= ball.y && ball.y < player_2.y + PADDLE_2_LENGTH){
 			ball.direction += ball.direction%2 ? -1 : 1;
+			pong_move_ball(TOUCH);
 		} else {
-			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, ball.x, ball.y, MATRIX_LED_ON); // PUNTO!
-			vTaskDelay(400/portTICK_PERIOD_MS); // hacer que parpadee la pelota y se muestre algun mensaje
-			ball.x = PONG_BOARD_WIDTH/2 + 10;
-			ball.y = my_rand()%(PONG_BOARD_HEIGHT - 3) + 7;
+			//MATRIX_set_led(MATRIX_DISPLAY_UNIT1, ball.x, ball.y, MATRIX_LED_ON); // PUNTO!
+			//vTaskDelay(400/portTICK_PERIOD_MS); // hacer que parpadee la pelota y se muestre algun mensaje
+			ball.x = (my_rand()%7) + 12;
+			ball.y = (my_rand()%20) + 5;
 			ball.direction = my_rand()%4;
 			player_1.score++;
 			game_data = PLAYER_1_POINT;
 			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+			return 1;
 		}
 	}
+	return 0;
 }
 
 

@@ -12,9 +12,12 @@
 
 #define PONG_BOARD_WIDTH 31
 #define PONG_BOARD_HEIGHT 31
-#define PADDLE_1_LENGTH 4
-#define PADDLE_2_LENGTH 4
+#define PADDLE_1_LENGTH 5
+#define PADDLE_2_LENGTH 5
 #define END_SCORE 5
+
+#define NO_TOUCH	1
+#define TOUCH 		0
 
 typedef struct {
 	uint8_t x, y, score;
@@ -31,7 +34,7 @@ typedef enum {
 void pong_init(void);
 void pong_play(void);
 void pong_print_board(void);
-void pong_move_ball(void);
-void pong_change_ball_direction(void);
+void pong_move_ball(uint8_t touch);
+uint8_t pong_change_ball_direction(void);
 
 #endif /* INC_PONG_H_ */
