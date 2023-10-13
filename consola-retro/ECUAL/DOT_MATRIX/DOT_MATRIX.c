@@ -587,6 +587,81 @@ void MATRIX_TMR_OVF_ISR(TIM_HandleTypeDef* htim)
 	}
 }
 
+void MATRIX_print_game_over(uint8_t au8_MATRIX_Instance) {
+
+    int letras[6][5][5] = {
+        // G
+        {
+            {1, 1, 1, 1, 0},
+            {1, 0, 0, 0, 0},
+            {1, 0, 0, 1, 1},
+            {1, 0, 0, 0, 1},
+            {1, 1, 1, 1, 0}
+        },
+        // A
+        {
+            {0, 0, 1, 0, 0},
+            {0, 1, 0, 1, 0},
+            {1, 0, 0, 0, 1},
+            {1, 1, 1, 1, 1},
+            {1, 0, 0, 0, 1}
+        },
+        // M
+        {
+            {1, 0, 0, 0, 1},
+            {1, 1, 0, 1, 1},
+            {1, 0, 1, 0, 1},
+            {1, 0, 0, 0, 1},
+            {1, 0, 0, 0, 1}
+        },
+        // E
+        {
+            {1, 1, 1, 1, 1},
+            {1, 0, 0, 0, 0},
+            {1, 1, 1, 0, 0},
+            {1, 0, 0, 0, 0},
+            {1, 1, 1, 1, 1}
+        },
+        // O
+        {
+            {0, 1, 1, 1, 0},
+            {1, 0, 0, 0, 1},
+            {1, 0, 0, 0, 1},
+            {1, 0, 0, 0, 1},
+            {0, 1, 1, 1, 0}
+        },
+        // V
+        {
+            {1, 0, 0, 0, 1},
+            {1, 0, 0, 0, 1},
+            {0, 1, 0, 1, 0},
+            {0, 1, 0, 1, 0},
+            {0, 0, 1, 0, 0}
+        }
+    };
+
+	// Encender "Game Over"
+	for (int letra = 0; letra < 6; letra++) {
+		for (int i = 0; i < 5; i++) {
+			for (int j = 0; j < 5; j++) {
+				MATRIX_set_led(au8_MATRIX_Instance, 4 * letra + i, j, letras[letra][i][j] ? MATRIX_LED_ON : MATRIX_LED_OFF);
+			}
+		}
+	}
+	MATRIX_display_buffer(au8_MATRIX_Instance);
+
+/*
+	// Apagar "Game Over" con espacio entre las letras
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
+			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 4 * 6 + i, j, espacio[i][j] ? MATRIX_LED_ON : MATRIX_LED_OFF);
+		}
+	}
+*/
+
+
+}
+
 void MATRIX_print_num(uint8_t au8_MATRIX_Instance, uint8_t num) {
     uint8_t ancho = 5;
     uint8_t alto = 8;
@@ -598,36 +673,36 @@ void MATRIX_print_num(uint8_t au8_MATRIX_Instance, uint8_t num) {
     uint8_t y_inicio = centro_y - alto / 2;
 
     uint8_t num1[8][5] = {
-		{1, 1, 1, 1, 1},
+		{0, 0, 1, 0, 0},
+		{0, 1, 1, 0, 0},
+		{1, 0, 1, 0, 0},
 		{0, 0, 1, 0, 0},
 		{0, 0, 1, 0, 0},
 		{0, 0, 1, 0, 0},
 		{0, 0, 1, 0, 0},
-		{0, 0, 1, 0, 1},
-		{0, 0, 1, 1, 0},
-		{0, 0, 1, 0, 0}
+		{1, 1, 1, 1, 1}
     };
 
     uint8_t num2[8][5] = {
-		{1, 1, 1, 1, 1},
+		{0, 1, 1, 1, 0},
+		{1, 0, 0, 0, 1},
 		{0, 0, 0, 0, 1},
 		{0, 0, 0, 1, 0},
 		{0, 0, 1, 0, 0},
 		{0, 1, 0, 0, 0},
 		{1, 0, 0, 0, 0},
-		{1, 0, 0, 0, 1},
-		{0, 1, 1, 1, 0}
+		{1, 1, 1, 1, 1}
     };
 
     uint8_t num3[8][5] = {
-		{0, 1, 1, 1, 1},
-		{1, 0, 0, 0, 0},
-		{1, 0, 0, 0, 0},
-		{1, 0, 0, 0, 0},
-		{0, 1, 1, 1, 0},
+		{1, 1, 1, 1, 1},
+		{0, 0, 0, 1, 0},
 		{0, 0, 1, 0, 0},
-		{0, 1, 0, 0, 0},
-		{1, 1, 1, 1, 1}
+		{0, 1, 1, 1, 0},
+		{0, 0, 0, 0, 1},
+		{0, 0, 0, 0, 1},
+		{0, 0, 0, 0, 1},
+		{1, 1, 1, 1, 0}
     };
 
     for (uint8_t i = 0; i < alto; i++) {

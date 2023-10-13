@@ -184,7 +184,7 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 	}game_play_t;
 
 	static uint32_t seconds=0, minutes=0;
-	static uint32_t score_1=0, score_2=0, score=0, lives=5;
+	static uint32_t score_1=0, score_2=0, score=0, lives=3;
 	static uint32_t start_ticks=0;
 	static int32_t countdown=3;
 	static game_play_t game_play = STATE_COUNTDOWN_SHOW;
@@ -197,13 +197,23 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 								 "         3          ",
 								 "                    ",
 								 FOUR_LINES)){
-			if(game == 0){ // aca creo todos los tasks de los games
+			switch(game){
+			case 0:
 				xTaskCreate(pong_task,
 							"pong_task",
 							configMINIMAL_STACK_SIZE,
 							NULL,
 							1,
 							NULL);
+				break;
+			case 2:
+				xTaskCreate(snake_task,
+							"snake_task",
+							configMINIMAL_STACK_SIZE,
+							NULL,
+							1,
+							NULL);
+				break;
 			}
 			game_play = STATE_COUNTDOWN_HANDLE;
 			countdown=3;

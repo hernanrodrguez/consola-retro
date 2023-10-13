@@ -34,7 +34,7 @@
 #define SEC_0				19
 #define GAME_COUNTDOWN 		20
 
-#define RESET_GAME_STATE() seconds=0; minutes=0; score_1=0; score_2=0; score=0; lives=5
+#define RESET_GAME_STATE() seconds=0; minutes=0; score_1=0; score_2=0; score=0; lives=3
 
 
 uint8_t menu_handle(void);

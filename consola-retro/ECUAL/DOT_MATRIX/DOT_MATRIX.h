@@ -88,5 +88,6 @@ void MATRIX_display_buffer(uint8_t au8_MATRIX_Instance);
 void MATRIX_set_led(uint8_t au8_MATRIX_Instance, uint8_t x, uint8_t y, uint8_t state);
 void MATRIX_clear_buffer(uint8_t au8_MATRIX_Instance);
 void MATRIX_print_num(uint8_t au8_MATRIX_Instance, uint8_t num);
+void MATRIX_print_game_over(uint8_t au8_MATRIX_Instance);
 
 #endif /* DOT_MATRIX_H_ */

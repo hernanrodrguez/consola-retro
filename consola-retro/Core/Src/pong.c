@@ -92,25 +92,25 @@ void pong_play(void){
 	case PONG_PLAYING:
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)) {
 			switch(joystick) {
-				case JOYSTICK_1_DOWN:
+				case JOYSTICK_1_UP:
 					if(player_1.y > 0) {
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, player_1.y + PADDLE_1_LENGTH - 1, MATRIX_LED_OFF);
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, --player_1.y, MATRIX_LED_ON);
 					}
 					break;
-				case JOYSTICK_1_UP:
+				case JOYSTICK_1_DOWN:
 					if(player_1.y + PADDLE_1_LENGTH - 1 < PONG_BOARD_HEIGHT) {
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, player_1.y, MATRIX_LED_OFF);
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, (++player_1.y) + PADDLE_1_LENGTH - 1, MATRIX_LED_ON);
 					}
 					break;
-				case JOYSTICK_2_DOWN:
+				case JOYSTICK_2_UP:
 					if(player_2.y > 0) {
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, player_2.y + PADDLE_2_LENGTH - 1, MATRIX_LED_OFF);
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, --player_2.y, MATRIX_LED_ON);
 					}
 					break;
-				case JOYSTICK_2_UP:
+				case JOYSTICK_2_DOWN:
 					if(player_2.y + PADDLE_2_LENGTH - 1 < PONG_BOARD_HEIGHT) {
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, player_2.y, MATRIX_LED_OFF);
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, (++player_2.y) + PADDLE_2_LENGTH - 1, MATRIX_LED_ON);
@@ -185,7 +185,7 @@ void pong_play(void){
 				pong_state = PONG_COUNTDOWN;
 				break;
 			case GAME_RESUME:
-				pong_state = PONG_PLAYING; // TODO: countdown
+				pong_state = PONG_PLAYING;
 				break;
 			case GAME_RESET:
 				pong_state = PONG_FIRST_PRINT;
@@ -193,6 +193,7 @@ void pong_play(void){
 				break;
 			case GAME_OVER:
 				// TODO: hacer algun tipo de animacion con la pantalla de game over, mostrarla y morir.
+				//MATRIX_print_game_over(MATRIX_DISPLAY_UNIT1);
 				pong_state = PONG_FIRST_PRINT;
 				vTaskDelete(NULL);
 				break;
@@ -201,6 +202,7 @@ void pong_play(void){
 		break;
 	case PONG_GAME_OVER:
 		// TODO: mostrar alguna animacion
+		//MATRIX_print_game_over(MATRIX_DISPLAY_UNIT1);
 		pong_state = PONG_FIRST_PRINT;
 		vTaskDelete(NULL); // chau chau adios...
 		break;

@@ -29,11 +29,13 @@ typedef struct {
 	uint32_t score;		// score
 } snake_t;
 
-uint8_t snake_play(void);
-void lose_a_life(void);
+void snake_init(void);
+void snake_play(void);
+uint8_t lose_a_life(void);
 void snake_move (void);
 void snake_bend(void);
 void snake_generate_food(void);
+void snake_blink(void);
 
 
 #endif /* INC_SNAKE_H_ */

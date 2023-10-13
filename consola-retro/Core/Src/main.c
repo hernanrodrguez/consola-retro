@@ -31,6 +31,7 @@
 #include "joystick.h"
 #include "menu.h"
 #include "pong.h"
+#include "snake.h"
 #include "buzzer.h"
 #include <stdio.h>
 /* USER CODE END Includes */
@@ -125,7 +126,7 @@ static void main_task(void *pvParameters){
 		TEST_DIE
 	} main_state_t;
 
-	static main_state_t main_state = STATE_WELCOME_SHOW;
+	static main_state_t main_state = STATE_GAME_2_MENU_SHOW; //STATE_WELCOME_SHOW;
 	static main_state_t next_state;
 	static uint32_t start_ticks, delay_ticks;
 
@@ -196,7 +197,7 @@ static void main_task(void *pvParameters){
 			}
 			break;
 		case STATE_GAME_0_MENU_HANDLE:
-			switch(menu_game_handle()){ // por ahora vuelvo en todos los casos...
+			switch(menu_game_handle()){
 			case 1: // jugar
 				main_state = STATE_GAME_0_PLAY;
 				break;
@@ -331,19 +332,37 @@ static void joysticks_task(void *pvParameters){
 
 static void test_task(void *pvParameters){
 
-	while(1){
-		MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
-		MATRIX_print_num(MATRIX_DISPLAY_UNIT1, 3);
-		vTaskDelay(500/portTICK_PERIOD_MS);
+    int centro_x = 16;
+    int centro_y = 16;
+    int radio = 0;
+    int maxRadio = 16;  // Ajusta el tamaño máximo del efecto pulsante
 
-		MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
-		MATRIX_print_num(MATRIX_DISPLAY_UNIT1, 2);
-		vTaskDelay(500/portTICK_PERIOD_MS);
+    while(1){
+		while (radio <= maxRadio) {
+			for (int fila = centro_y - radio; fila <= centro_y + radio; fila++) {
+				for (int columna = centro_x - radio; columna <= centro_x + radio; columna++) {
+					if (fila >= 0 && fila < 32 && columna >= 0 && columna < 32) {
+						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, columna, fila, MATRIX_LED_ON);
+					}
+				}
+			}
+			MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
+			for (int fila = centro_y - radio; fila <= centro_y + radio; fila++) {
+				for (int columna = centro_x - radio; columna <= centro_x + radio; columna++) {
+					if (fila >= 0 && fila < 32 && columna >= 0 && columna < 32) {
+						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, columna, fila, MATRIX_LED_OFF);
+					}
+				}
+			}
+			MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
+			radio++;
+		}
+		radio=0;
+    }
 
-		MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
-		MATRIX_print_num(MATRIX_DISPLAY_UNIT1, 1);
-		vTaskDelay(500/portTICK_PERIOD_MS);
-	}
+
+
+
 
 	/*
 	while(1){
@@ -488,6 +507,13 @@ void pong_task(void *pvParameters){
 	}
 }
 
+void snake_task(void *pvParameters){
+	snake_init();
+	while(1){
+		snake_play();
+	}
+}
+
 
 /* USER CODE END 0 */
 
@@ -532,6 +558,8 @@ int main(void)
   DOT_MATRIX_Init(&hspi1);
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 
+  MATRIX_CLEAR(MATRIX_DISPLAY_UNIT1);
+
   xTaskCreate(main_task,
 			  "main_task",
 			  configMINIMAL_STACK_SIZE,
@@ -553,14 +581,14 @@ int main(void)
 			  1,
 			  NULL);
 */
-
-  /*xTaskCreate(test_task,
+/*
+  xTaskCreate(test_task,
 			  "test_task",
 			  configMINIMAL_STACK_SIZE,
 			  NULL,
 			  1,
-			  NULL);*/
-
+			  NULL);
+*/
   vTaskStartScheduler();
 
   /* USER CODE END 2 */
