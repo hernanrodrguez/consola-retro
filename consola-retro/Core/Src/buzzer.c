@@ -110,7 +110,7 @@ note_t harryPotterMelody[] = {
     {523, 400},
 };
 
-note_t powerOnMelody1[] = {
+note_t power_on_melody[] = {
     {784, 200},
     {988, 200},
     {1175, 200},
@@ -193,7 +193,7 @@ note_t inGameMelody6[] = {
     {880, 800},
 };
 
-note_t victoryMelody1[] = {
+note_t short_victory_melody[] = {
     {784, 400},
     {987, 400},
     {1175, 400},
@@ -214,7 +214,7 @@ note_t victoryMelody3[] = {
     {880, 600},
 };
 
-note_t victoryMelody4[] = {
+note_t long_victory_melody[] = {
     {784, 100},
     {932, 100},
     {1046, 100},
@@ -253,7 +253,7 @@ note_t victoryMelody6[] = {
 	{2637, 400},
 };
 
-note_t defeatMelody1[] = {
+note_t lost_life_melody[] = {
     {392, 200},
     {294, 200},
     {262, 200},
@@ -281,6 +281,22 @@ note_t melody[] = {
     {659, 500},
 };
 
+note_t navigation_tone[] = {
+    {784, 100},
+};
+
+note_t long_tone[] = {
+    {784, 500},
+};
+
+note_t lost_game_melody[] = {
+    {392, 400},
+    {294, 400},
+    {262, 400},
+    {196, 800},
+};
+
+extern QueueHandle_t buzzer_queue;
 extern TIM_HandleTypeDef htim3;
 
 /*void PlayTone(uint16_t frequency, uint16_t duration) {
@@ -289,13 +305,43 @@ extern TIM_HandleTypeDef htim3;
     HAL_Delay(duration);
 }*/
 
+void buzzer_play(void) {
+	static uint8_t buzzer_data;
+
+	if(pdTRUE == xQueueReceive(buzzer_queue, &buzzer_data, portMAX_DELAY)){
+		switch(buzzer_data){
+		case OPENING_MELODY:
+			buzzer_play_melody(power_on_melody, (sizeof(power_on_melody)/sizeof(note_t)));
+			break;
+		case NAVIGATION_TONE:
+			buzzer_play_melody(navigation_tone, (sizeof(navigation_tone)/sizeof(note_t)));
+			break;
+		case LONG_TONE:
+			buzzer_play_melody(long_tone, (sizeof(long_tone)/sizeof(note_t)));
+			break;
+		case POINT_TONE:
+			buzzer_play_melody(short_victory_melody, (sizeof(short_victory_melody)/sizeof(note_t)));
+			break;
+		case VICTORY_TONE:
+			buzzer_play_melody(long_victory_melody, (sizeof(long_victory_melody)/sizeof(note_t)));
+			break;
+		case LOST_TONE:
+			buzzer_play_melody(lost_game_melody, (sizeof(lost_game_melody)/sizeof(note_t)));
+			break;
+		case LIVE_TONE:
+			buzzer_play_melody(lost_life_melody, (sizeof(lost_life_melody)/sizeof(note_t)));
+			break;
+		}
+	}
+}
+
 void buzzer_test_melody(void) {
 	buzzer_play_melody(victoryMelody6, (sizeof(victoryMelody6)/sizeof(note_t)));
 }
 
 void buzzer_play_tone(uint16_t frequency, uint16_t duration) {
 	buzzer_set_tone(frequency);
-    HAL_Delay(duration); // TODO: esto tengo que pasarlo a no bloqueante
+    vTaskDelay(duration);
     HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
 }
 

@@ -63,6 +63,7 @@ TIM_HandleTypeDef htim3;
 
 QueueHandle_t joysticks_queue;
 QueueHandle_t game_queue;
+QueueHandle_t buzzer_queue;
 
 /* USER CODE END PV */
 
@@ -126,9 +127,10 @@ static void main_task(void *pvParameters){
 		TEST_DIE
 	} main_state_t;
 
-	static main_state_t main_state = STATE_GAME_2_MENU_SHOW; //STATE_WELCOME_SHOW;
+	static main_state_t main_state = STATE_WELCOME_SHOW; //STATE_WELCOME_SHOW;
 	static main_state_t next_state;
 	static uint32_t start_ticks, delay_ticks;
+	uint8_t buzzer_data;
 
 	while(1){
 		switch(main_state){
@@ -140,6 +142,8 @@ static void main_task(void *pvParameters){
 									 FOUR_LINES)){
 				delay_ticks = 2000;
 				start_ticks = HAL_GetTick();
+				//buzzer_data = OPENING_MELODY;
+				//xQueueSendToBack(buzzer_queue, &buzzer_data, 0);
 				main_state = STATE_WELCOME_DELAY;
 			}
 			break;
@@ -514,6 +518,12 @@ void snake_task(void *pvParameters){
 	}
 }
 
+static void buzzer_task(void *pvParameters){
+	while(1){
+		buzzer_play();
+	}
+}
+
 
 /* USER CODE END 0 */
 
@@ -553,6 +563,7 @@ int main(void)
 
   joysticks_queue = xQueueCreate(1, sizeof(uint8_t));
   game_queue = xQueueCreate(1, sizeof(uint8_t));
+  buzzer_queue = xQueueCreate(1, sizeof(uint8_t));
 
   lcd_init(&hi2c1);
   DOT_MATRIX_Init(&hspi1);
@@ -569,6 +580,13 @@ int main(void)
 
   xTaskCreate(joysticks_task,
 			  "joysticks_task",
+			  configMINIMAL_STACK_SIZE,
+			  NULL,
+			  1,
+			  NULL);
+
+  xTaskCreate(buzzer_task,
+			  "buzzer_task",
 			  configMINIMAL_STACK_SIZE,
 			  NULL,
 			  1,

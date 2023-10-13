@@ -12,16 +12,16 @@
 #include "DOT_MATRIX.h"
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "buzzer.h"
 
 const point_t SPAWN_POINT = (point_t){15, 15, JOYSTICK_1_RIGHT};
 
-// TODO: una funcion que me ponga los valores por defecto de snake y food
 point_t head, bend[500], food, body[MAX_BODY_LENGTH+1];
 snake_t snake = (snake_t){0, 0, DEFAULT_BODY_LENGTH + 1, SNAKE_DEFAULT_LIVES, 0};
-uint8_t game_on_flag_2 = 1; // TODO: revisar como lo habia resuelto con el pong
 
 extern QueueHandle_t joysticks_queue;
 extern QueueHandle_t game_queue;
+extern QueueHandle_t buzzer_queue;
 
 static uint32_t my_rand(void){
 	uint32_t y = HAL_GetTick();
@@ -32,7 +32,9 @@ static uint32_t my_rand(void){
 }
 
 void snake_init(void) {
+	food = (point_t){0, 0, 0};
 	bend[0] = head = SPAWN_POINT;
+	snake = (snake_t){0, 0, DEFAULT_BODY_LENGTH + 1, SNAKE_DEFAULT_LIVES, 0};
 
 	MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 	MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
@@ -47,11 +49,12 @@ void snake_play(void) {
 		SNAKE_GAME_OVER
 	} snake_state_t;
 
-	uint8_t joystick, lal, game_data;
+	uint8_t joystick, game_data, buzzer_data;
 	static snake_state_t snake_state = SNAKE_FIRST_PRINT;
 
 	switch(snake_state){
 	case SNAKE_FIRST_PRINT:
+		snake_init();
 		snake_state = SNAKE_COUNTDOWN;
 		break;
 	case SNAKE_COUNTDOWN:
@@ -80,12 +83,7 @@ void snake_play(void) {
 		snake_generate_food();
 		snake.body_no = 0;
 		snake_move();
-		lal = lose_a_life();
-		if(lal != GAME_OVER) {
-			if(lal == SINGLE_PLAYER_LIVE) {
-				game_data = SINGLE_PLAYER_LIVE;
-				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-			}
+		if(lose_a_life() != SINGLE_PLAYER_LOST) {
 			if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
 				switch(joystick) {
 					case JOYSTICK_1_LEFT:
@@ -107,6 +105,7 @@ void snake_play(void) {
 										break;
 									case JOYSTICK_1_DOWN:
 										head.y--;
+										break;
 								}
 						}
 						break;
@@ -116,7 +115,7 @@ void snake_play(void) {
 							case JOYSTICK_1_LEFT:
 							case JOYSTICK_1_RIGHT:
 								bend[++snake.bend_no] = head;
-								head.direction = joystick; // TODO: corregir, seguro esta mal
+								head.direction = joystick;
 								switch(joystick) {
 									case JOYSTICK_1_LEFT:
 										head.x--;
@@ -129,10 +128,12 @@ void snake_play(void) {
 										break;
 									case JOYSTICK_1_DOWN:
 										head.y--;
+										break;
 								}
 						}
 						break;
 					case JOYSTICK_1_PULS: // pausa
+						BUZZER_TONE();
 						game_data = PLAYER_1_PAUSE;
 						xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 						snake_state = SNAKE_PAUSE;
@@ -141,8 +142,6 @@ void snake_play(void) {
 			}
 			MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
 		} else {
-			game_data = SINGLE_PLAYER_LOST;
-			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 			snake_state = SNAKE_GAME_OVER;
 		}
 		break;
@@ -182,6 +181,7 @@ void snake_play(void) {
 }
 
 uint8_t lose_a_life(void) {
+	uint8_t game_data, buzzer_data;
 	uint8_t i, touched_body_flag = 0;
 	for(i = 4; i < snake.length; i++) { // arranca en 4 porque la snake tiene que ser de long 4 al menos para chocarse consigo misma
 		if(body[0].x == body[i].x && body[0].y == body[i].y) {
@@ -190,18 +190,25 @@ uint8_t lose_a_life(void) {
 		}
 	}
 	if(head.x < 0 || head.x > SNAKE_BOARD_WIDTH || head.y < 0 || head.y > SNAKE_BOARD_HEIGHT || touched_body_flag) {
-		snake_blink();
 		snake.lives--;
 
 		if(!snake.lives) {
-			return GAME_OVER;
+			BUZZER_LOST_TONE();
+			game_data = SINGLE_PLAYER_LOST;
+			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+			snake_blink();
+			return SINGLE_PLAYER_LOST;
 		}
+
+		BUZZER_LIVE_TONE();
+		game_data = SINGLE_PLAYER_LIVE;
+		xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+		snake_blink();
 		head = SPAWN_POINT;
 		snake.bend_no = 0;
 		for(i = 0; i < snake.length; i++) {
 			body[i].x = body[i].y = 0;
 		}
-		return SINGLE_PLAYER_LIVE;
 	}
 	return 0;
 }
@@ -272,10 +279,11 @@ void snake_move (void) {
 			if(pdFALSE == xQueuePeek(joysticks_queue, &joystick, 0)){
 				head.y++;
 			}
+			break;
 	}
 }
 
-void snake_bend() {
+void snake_bend(void) {
 	int16_t i, j, diff;
 
 	MATRIX_set_led(MATRIX_DISPLAY_UNIT1, body[snake.length-1].x, body[snake.length-1].y, MATRIX_LED_OFF);
@@ -303,12 +311,13 @@ void snake_bend() {
 
 void snake_generate_food() {
 	uint8_t snake_intersect_flag = 1;
-	uint8_t game_data;
+	uint8_t game_data, buzzer_data;
 	if(head.x == food.x && head.y == food.y) { // comio
 		if(snake.length <= MAX_BODY_LENGTH) {
 			snake.length++;
 		}
 
+		BUZZER_POINT_TONE();
 		game_data = SINGLE_PLAYER_POINT;
 		xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 
@@ -326,8 +335,8 @@ void snake_generate_food() {
 				}
 			}
 		}
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, food.x, food.y, MATRIX_LED_ON); // shows the food on board with "F" (TODO: hacerla titilar para distinguirla?)
-	} else if(food.x == 0 && food.y == 0) {			// generates food for the first time
+		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, food.x, food.y, MATRIX_LED_ON);
+	} else if(food.x == 0 && food.y == 0) {	// genera comida por primera vez
 		while(snake_intersect_flag) {
 			food.x = (my_rand()%28) + 2; // nro aleatorio del 2 al 29
 			food.y = (my_rand()%28) + 2; // nro aleatorio del 2 al 29

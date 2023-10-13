@@ -36,6 +36,37 @@
 
 #define RESET_GAME_STATE() seconds=0; minutes=0; score_1=0; score_2=0; score=0; lives=3
 
+#define BUZZER_TONE() do { \
+    buzzer_data = NAVIGATION_TONE; \
+    xQueueSendToBack(buzzer_queue, &buzzer_data, 0); \
+} while (0)
+
+#define BUZZER_LONG_TONE() do { \
+    buzzer_data = LONG_TONE; \
+    xQueueSendToBack(buzzer_queue, &buzzer_data, 0); \
+} while (0)
+
+#define BUZZER_POINT_TONE() do { \
+    buzzer_data = POINT_TONE; \
+    xQueueSendToBack(buzzer_queue, &buzzer_data, 0); \
+} while (0)
+
+#define BUZZER_LIVE_TONE() do { \
+    buzzer_data = LIVE_TONE; \
+    xQueueSendToBack(buzzer_queue, &buzzer_data, 0); \
+} while (0)
+
+#define BUZZER_VICTORY_TONE() do { \
+    buzzer_data = VICTORY_TONE; \
+    xQueueSendToBack(buzzer_queue, &buzzer_data, 0); \
+} while (0)
+
+#define BUZZER_LOST_TONE() do { \
+    buzzer_data = LOST_TONE; \
+    xQueueSendToBack(buzzer_queue, &buzzer_data, 0); \
+} while (0)
+
+
 
 uint8_t menu_handle(void);
 uint8_t menu_game_handle(void);

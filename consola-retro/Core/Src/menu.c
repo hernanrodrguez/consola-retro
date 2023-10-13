@@ -9,12 +9,14 @@
 #include "lcd1602_i2c.h"
 #include "main.h"
 #include "joystick.h"
+#include "buzzer.h"
 
 #include "FreeRTOS.h"
 #include "queue.h"
 
 extern QueueHandle_t joysticks_queue;
 extern QueueHandle_t game_queue;
+extern QueueHandle_t buzzer_queue;
 
 uint8_t menu_game_handle(void){
 	typedef enum{
@@ -24,13 +26,14 @@ uint8_t menu_game_handle(void){
 		STATE_BACK
 	}menu_game_state_t;
 
-	uint8_t joystick;
+	uint8_t joystick, buzzer_data;
 	static menu_game_state_t menu_game_state = STATE_PLAY;
 
 	switch(menu_game_state){
 	case STATE_PLAY:
 		menu_blink(0, " Jugar    ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
 			menu_blink_option(0, " Jugar    ");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
@@ -46,6 +49,7 @@ uint8_t menu_game_handle(void){
 	case STATE_RULES:
 		menu_blink(1, "  Reglas  ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
 			menu_blink_option(1, "  Reglas  ");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
@@ -61,6 +65,7 @@ uint8_t menu_game_handle(void){
 	case STATE_SCORE:
 		menu_blink(2, "  Puntajes");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
 			menu_blink_option(2, "  Puntajes");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
@@ -76,6 +81,7 @@ uint8_t menu_game_handle(void){
 	case STATE_BACK:
 		menu_blink(3, "  Volver  ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
 			menu_blink_option(3, "  Volver  ");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
@@ -101,12 +107,13 @@ uint8_t menu_handle(void){
 	}menu_state_t;
 
 	static menu_state_t menu_state = STATE_GAME_0;
-	uint8_t joystick;
+	uint8_t joystick, buzzer_data;
 
 	switch(menu_state){
 	case STATE_GAME_0:
 		menu_blink(0, "  Pong    ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
 			menu_blink_option(0, "  Pong    ");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
@@ -122,6 +129,7 @@ uint8_t menu_handle(void){
 	case STATE_GAME_1:
 		menu_blink(1, "  Tetris  ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
 			menu_blink_option(1, "  Tetris  ");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
@@ -137,6 +145,7 @@ uint8_t menu_handle(void){
 	case STATE_GAME_2:
 		menu_blink(2, "  Snake   ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
 			menu_blink_option(2, "  Snake   ");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
@@ -152,6 +161,7 @@ uint8_t menu_handle(void){
 	case STATE_GAME_3:
 		menu_blink(3, "  Space   ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
 			menu_blink_option(3, "  Space   ");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
@@ -188,7 +198,7 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 	static uint32_t start_ticks=0;
 	static int32_t countdown=3;
 	static game_play_t game_play = STATE_COUNTDOWN_SHOW;
-	uint8_t game_data;
+	uint8_t game_data, buzzer_data;
 
 	switch(game_play){
 	case STATE_COUNTDOWN_SHOW:
@@ -233,6 +243,8 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 
 			game_data = SEC_3;
 			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+
+			BUZZER_TONE();
 			start_ticks = HAL_GetTick();
 		}
 		break;
@@ -246,19 +258,26 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 
 				game_data = SEC_2;
 				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+
+				BUZZER_TONE();
 			} else if(countdown==1){
 				lcd_set_cursor(2, 9);
 				lcd_char('1');
 
 				game_data = SEC_1;
 				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+
+				BUZZER_TONE();
 			} else if(countdown==0){
 				lcd_set_cursor(2, 9);
 				lcd_char('0');
 
 				game_data = SEC_0;
 				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+
+				BUZZER_TONE();
 			} else if(countdown<0){
+				BUZZER_LONG_TONE();
 				if(game == 0){ // el pong es el unico juego 1v1
 					lcd_print(text,
 							  "  Partida en juego  ",
@@ -268,7 +287,7 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 				} else {
 					lcd_print(text,
 							  "  Partida en juego  ",
-							  "   Pts:00  Vidas:5  ",
+							  "   Pts:00  Vidas:3  ",
 							  "        00:00       ");
 					lcd_print_pts_lives(score, lives);
 				}
@@ -423,12 +442,13 @@ uint8_t menu_gameover_handle(void){
 	}gameover_state_t;
 
 	static gameover_state_t gameover_state = STATE_RESET;
-	uint8_t joystick;
+	uint8_t joystick, buzzer_data;
 
 	switch(gameover_state){
 	case STATE_RESET:
 		menu_blink(2, " Reiniciar");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
 			menu_blink_option(2, " Reiniciar");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
@@ -442,6 +462,7 @@ uint8_t menu_gameover_handle(void){
 	case STATE_EXIT:
 		menu_blink(3, "   Salir  ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
 			menu_blink_option(3, "   Salir  ");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
@@ -465,12 +486,13 @@ uint8_t menu_pause_handle(void){
 	}pause_state_t;
 
 	static pause_state_t pause_state = STATE_CONTINUE;
-	uint8_t joystick;
+	uint8_t joystick, buzzer_data;
 
 	switch(pause_state){
 	case STATE_CONTINUE:
 		menu_blink(0, " Reanudar ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
 			menu_blink_option(0, " Reanudar ");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
@@ -486,6 +508,7 @@ uint8_t menu_pause_handle(void){
 	case STATE_RESET:
 		menu_blink(1, " Reiniciar");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
 			menu_blink_option(1, " Reiniciar");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
@@ -501,6 +524,7 @@ uint8_t menu_pause_handle(void){
 	case STATE_SCORES:
 		menu_blink(2, " Puntajes ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
 			menu_blink_option(2, " Puntajes ");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
@@ -516,6 +540,7 @@ uint8_t menu_pause_handle(void){
 	case STATE_EXIT:
 		menu_blink(3, "   Salir  ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
 			menu_blink_option(3, "   Salir  ");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio

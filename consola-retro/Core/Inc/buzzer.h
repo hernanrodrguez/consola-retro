@@ -10,10 +10,20 @@
 
 #include <stdint.h>
 
+#define OPENING_MELODY 	0
+#define NAVIGATION_TONE 1
+#define LONG_TONE 		2
+#define POINT_TONE 		3
+#define LIVE_TONE 		4
+#define VICTORY_TONE	5
+#define LOST_TONE		6
+
 typedef struct {
     uint16_t frequency;
     uint16_t duration;
 } note_t;
+
+void buzzer_play(void);
 
 void buzzer_test_melody(void);
 

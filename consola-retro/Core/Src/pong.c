@@ -12,6 +12,7 @@
 #include "DOT_MATRIX.h"
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "buzzer.h"
 
 player_t player_1;
 player_t player_2;
@@ -19,6 +20,7 @@ ball_t ball;
 
 extern QueueHandle_t joysticks_queue;
 extern QueueHandle_t game_queue;
+extern QueueHandle_t buzzer_queue;
 
 static uint32_t my_rand(void){
 	uint32_t y = HAL_GetTick();
@@ -58,8 +60,7 @@ void pong_play(void){
 		PONG_GAME_OVER
 	} pong_state_t;
 
-	uint8_t joystick;
-	uint8_t game_data;
+	uint8_t joystick, game_data, buzzer_data;
 	static pong_state_t pong_state = PONG_FIRST_PRINT;
 
 	switch(pong_state){
@@ -117,12 +118,16 @@ void pong_play(void){
 					}
 					break;
 				case JOYSTICK_1_PULS: // pausa
+					BUZZER_TONE();
+
 					game_data = PLAYER_1_PAUSE;
 					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 					pong_state = PONG_PLAYER_1_PAUSE;
 					taskYIELD();
 					break;
 				case JOYSTICK_2_PULS: // pausa
+					BUZZER_TONE();
+
 					game_data = PLAYER_2_PAUSE;
 					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 					pong_state = PONG_PLAYER_2_PAUSE;
@@ -162,10 +167,12 @@ void pong_play(void){
 		}
 
 		if(player_1.score == END_SCORE){
+			BUZZER_VICTORY_TONE();
 			game_data = PLAYER_1_WIN;
 			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 			pong_state = PONG_GAME_OVER;
 		} else if(player_2.score == END_SCORE){
+			BUZZER_VICTORY_TONE();
 			game_data = PLAYER_2_WIN;
 			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 			pong_state = PONG_GAME_OVER;
@@ -256,22 +263,27 @@ void pong_move_ball(uint8_t touch){
 }
 
 uint8_t pong_change_ball_direction(void){
-
+	uint8_t buzzer_data;
 	if(ball.y < 1 || ball.y > (PONG_BOARD_HEIGHT-1)) { // si toco borde inferior o superior
+		BUZZER_TONE();
 		ball.direction += ball.direction<2 ? 2 : -2;
 	}
 	if(ball.x <= player_1.x) { // si toco al player1
 		if(player_1.y <= ball.y && ball.y < player_1.y + PADDLE_1_LENGTH){
+			BUZZER_TONE();
 			ball.direction += ball.direction%2 ? -1 : 1;
 			pong_move_ball(TOUCH);
 		} else { // si toco el borde de player1, punto para player2
+			BUZZER_POINT_TONE();
 			return 2;
 		}
 	} else if(ball.x >= player_2.x) { // si toco al player2
 		if(player_2.y <= ball.y && ball.y < player_2.y + PADDLE_2_LENGTH){
+			BUZZER_TONE();
 			ball.direction += ball.direction%2 ? -1 : 1;
 			pong_move_ball(TOUCH);
 		} else { // si toco el borde de player2, punto para player1
+			BUZZER_POINT_TONE();
 			return 1;
 		}
 	}
