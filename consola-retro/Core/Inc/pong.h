@@ -12,7 +12,7 @@
 #include <stdlib.h>
 
 #define PONG_BOARD_WIDTH 31
-#define PONG_BOARD_HEIGHT 31
+#define PONG_BOARD_HEIGHT 16
 #define PADDLE_1_LENGTH 5
 #define PADDLE_2_LENGTH 5
 #define END_SCORE 5

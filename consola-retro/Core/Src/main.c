@@ -335,34 +335,25 @@ static void joysticks_task(void *pvParameters){
 	}
 }
 
+static uint32_t my_rand(void){
+	uint32_t y = HAL_GetTick();
+	y^= y<<13;
+	y^= y>>17;
+	y^= y<<5;
+	return y;
+}
+
 static void test_task(void *pvParameters){
 
-    int centro_x = 16;
-    int centro_y = 16;
-    int radio = 0;
-    int maxRadio = 16;  // Ajusta el tamaño máximo del efecto pulsante
-
     while(1){
-		while (radio <= maxRadio) {
-			for (int fila = centro_y - radio; fila <= centro_y + radio; fila++) {
-				for (int columna = centro_x - radio; columna <= centro_x + radio; columna++) {
-					if (fila >= 0 && fila < 32 && columna >= 0 && columna < 32) {
-						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, columna, fila, MATRIX_LED_ON);
-					}
-				}
-			}
-			MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
-			for (int fila = centro_y - radio; fila <= centro_y + radio; fila++) {
-				for (int columna = centro_x - radio; columna <= centro_x + radio; columna++) {
-					if (fila >= 0 && fila < 32 && columna >= 0 && columna < 32) {
-						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, columna, fila, MATRIX_LED_OFF);
-					}
-				}
-			}
-			MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
-			radio++;
-		}
-		radio=0;
+    	MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
+    	for(uint8_t i=0; i<32; i++) {
+    		uint32_t line = my_rand()% 7 + 25;
+    		for(uint8_t j=0; j<line; j++) {
+    			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, j, MATRIX_LED_ON);
+    		}
+    	}
+    	MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
     }
 
 

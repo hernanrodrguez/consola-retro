@@ -31,19 +31,19 @@ static uint32_t my_rand(void){
 }
 
 static void regen_ball(void){
-	ball.x = (my_rand()%7) + 12;
-	ball.y = (my_rand()%20) + 5;
+	ball.x = 15;
+	ball.y = (my_rand()%5) + 13;
 	ball.direction = my_rand()%4;
 }
 
 void pong_init(void){
 
 	player_1.x = 0;
-	player_1.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 1;
+	player_1.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 8;
 	player_1.score = 0;
 
 	player_2.x = PONG_BOARD_WIDTH;
-	player_2.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 1;
+	player_2.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 8;
 	player_2.score = 0;
 
 	regen_ball();
@@ -94,25 +94,25 @@ void pong_play(void){
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)) {
 			switch(joystick) {
 				case JOYSTICK_1_UP:
-					if(player_1.y > 0) {
+					if(player_1.y > 8) {
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, player_1.y + PADDLE_1_LENGTH - 1, MATRIX_LED_OFF);
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, --player_1.y, MATRIX_LED_ON);
 					}
 					break;
 				case JOYSTICK_1_DOWN:
-					if(player_1.y + PADDLE_1_LENGTH - 1 < PONG_BOARD_HEIGHT) {
+					if(player_1.y + PADDLE_1_LENGTH - 1 < 23) {
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, player_1.y, MATRIX_LED_OFF);
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_1.x, (++player_1.y) + PADDLE_1_LENGTH - 1, MATRIX_LED_ON);
 					}
 					break;
 				case JOYSTICK_2_UP:
-					if(player_2.y > 0) {
+					if(player_2.y > 8) {
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, player_2.y + PADDLE_2_LENGTH - 1, MATRIX_LED_OFF);
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, --player_2.y, MATRIX_LED_ON);
 					}
 					break;
 				case JOYSTICK_2_DOWN:
-					if(player_2.y + PADDLE_2_LENGTH - 1 < PONG_BOARD_HEIGHT) {
+					if(player_2.y + PADDLE_2_LENGTH - 1 < 23) {
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, player_2.y, MATRIX_LED_OFF);
 						MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, (++player_2.y) + PADDLE_2_LENGTH - 1, MATRIX_LED_ON);
 					}
@@ -235,6 +235,12 @@ void pong_print_board(void){
 	for(uint8_t i=0; i<PADDLE_2_LENGTH; i++) {
 		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, player_2.x, player_2.y + i, MATRIX_LED_ON);
 	}
+
+	for(uint8_t i=0; i<=PONG_BOARD_WIDTH; i++) {
+		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 7, MATRIX_LED_ON);
+		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, 24, MATRIX_LED_ON);
+	}
+
 	MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
 }
 
@@ -264,7 +270,7 @@ void pong_move_ball(uint8_t touch){
 
 uint8_t pong_change_ball_direction(void){
 	uint8_t buzzer_data;
-	if(ball.y < 1 || ball.y > (PONG_BOARD_HEIGHT-1)) { // si toco borde inferior o superior
+	if(ball.y <= 8 || ball.y >= (24-1)) { // si toco borde inferior o superior
 		BUZZER_TONE();
 		ball.direction += ball.direction<2 ? 2 : -2;
 	}

@@ -234,9 +234,7 @@ void erase_shape_from_console(void) {
 	for(i=0; i<current->width; i++) {
 		for(j=0; j<current->width; j++) {
 			if(current->shape_matrix[i][j]) {
-				//MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31 + 2*(j + current->x), 4 + i + current->y, MATRIX_LED_OFF);
 				MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 8+j+current->x, i+current->y, MATRIX_LED_OFF);
-				// display buffer?
 			}
 		}
 	}
@@ -341,7 +339,6 @@ void print_shape_to_console(void) {
 	for(i=0; i<TETRIS_BOARD_HEIGHT; i++) {
 		for(j=0; j<TETRIS_BOARD_WIDTH; j++) {
 			if(tetris.board[i][j]) {
-				//MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 31+2*j, 4+i, MATRIX_LED_ON);
 				MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 8+j, i, MATRIX_LED_ON);
 			}
 		}
