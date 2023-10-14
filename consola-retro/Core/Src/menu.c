@@ -216,6 +216,14 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 							1,
 							NULL);
 				break;
+			case 1:
+				xTaskCreate(tetris_task,
+							"tetris_task",
+							configMINIMAL_STACK_SIZE,
+							NULL,
+							1,
+							NULL);
+				break;
 			case 2:
 				xTaskCreate(snake_task,
 							"snake_task",
@@ -287,7 +295,7 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 				} else {
 					lcd_print(text,
 							  "  Partida en juego  ",
-							  "   Pts:00  Vidas:3  ",
+							  "   Pts:00  Vidas:3  ", // el tetris por como esta planteado no tiene vidas
 							  "        00:00       ");
 					lcd_print_pts_lives(score, lives);
 				}

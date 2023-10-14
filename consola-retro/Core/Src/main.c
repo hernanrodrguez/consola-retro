@@ -32,6 +32,7 @@
 #include "menu.h"
 #include "pong.h"
 #include "snake.h"
+#include "tetris.h"
 #include "buzzer.h"
 #include <stdio.h>
 /* USER CODE END Includes */
@@ -515,6 +516,12 @@ void snake_task(void *pvParameters){
 	snake_init();
 	while(1){
 		snake_play();
+	}
+}
+
+void tetris_task(void *pvParameters){
+	while(1){
+		tetris_play();
 	}
 }
 

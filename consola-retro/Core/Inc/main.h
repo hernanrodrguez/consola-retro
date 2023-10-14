@@ -61,6 +61,7 @@ void single_player_game_task(void *pvParameters);
 void two_player_game_task(void *pvParameters);
 void pong_task(void *pvParameters);
 void snake_task(void *pvParameters);
+void tetris_task(void *pvParameters);
 
 /* USER CODE END EFP */
 

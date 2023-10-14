@@ -9,6 +9,7 @@
 #define INC_PONG_H_
 
 #include <stdint.h>
+#include <stdlib.h>
 
 #define PONG_BOARD_WIDTH 31
 #define PONG_BOARD_HEIGHT 31
