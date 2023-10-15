@@ -32,8 +32,6 @@ void tetris_play(void);
 
 void tetris_init(void);
 
-//void control_current_shape(uint8_t joystick);
-
 shape_t* copy_shape(const shape_t shape);
 
 void erase_shape_from_console(void);

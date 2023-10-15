@@ -195,6 +195,7 @@ void tetris_play(void) {
 				break;
 			case GAME_OVER:
 				// TODO: hacer algun tipo de animacion con la pantalla de game over, mostrarla y morir.
+				MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, GAMEOVER_MSG);
 				tetris_state = TETRIS_FIRST_PRINT;
 				vTaskDelete(NULL);
 				break;
@@ -204,7 +205,7 @@ void tetris_play(void) {
 
 	case TETRIS_GAME_OVER:
 		// TODO: mostrar alguna animacion
-		//MATRIX_print_game_over(MATRIX_DISPLAY_UNIT1);
+		MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, GAMEOVER_MSG);
 		tetris_state = TETRIS_FIRST_PRINT;
 		vTaskDelete(NULL); // chau chau adios...
 		break;

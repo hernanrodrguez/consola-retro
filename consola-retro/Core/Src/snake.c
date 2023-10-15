@@ -157,14 +157,14 @@ void snake_play(void) {
 				snake_state = SNAKE_COUNTDOWN;
 				break;
 			case GAME_RESUME:
-				snake_state = SNAKE_PLAYING; // TODO: countdown
+				snake_state = SNAKE_PLAYING;
 				break;
 			case GAME_RESET:
 				snake_state = SNAKE_FIRST_PRINT;
 				vTaskDelete(NULL);
 				break;
 			case GAME_OVER:
-				// TODO: hacer algun tipo de animacion con la pantalla de game over, mostrarla y morir.
+				MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, GAMEOVER_MSG);
 				snake_state = SNAKE_FIRST_PRINT;
 				vTaskDelete(NULL);
 				break;
@@ -172,10 +172,9 @@ void snake_play(void) {
 		}
 		break;
 	case SNAKE_GAME_OVER:
-		// TODO: mostrar alguna animacion
-		//MATRIX_print_game_over(MATRIX_DISPLAY_UNIT1);
+		MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, GAMEOVER_MSG);
 		snake_state = SNAKE_FIRST_PRINT;
-		vTaskDelete(NULL); // chau chau adios...
+		vTaskDelete(NULL);
 		break;
 	}
 }
@@ -183,7 +182,7 @@ void snake_play(void) {
 uint8_t lose_a_life(void) {
 	uint8_t game_data, buzzer_data;
 	uint8_t i, touched_body_flag = 0;
-	for(i = 4; i < snake.length; i++) { // arranca en 4 porque la snake tiene que ser de long 4 al menos para chocarse consigo misma
+	for(i = 4; i < snake.length; i++) {
 		if(body[0].x == body[i].x && body[0].y == body[i].y) {
 			touched_body_flag = 1;
 			break;
@@ -242,7 +241,6 @@ void snake_move (void) {
 				MATRIX_set_led(MATRIX_DISPLAY_UNIT1, body[snake.body_no].x, body[snake.body_no].y, MATRIX_LED_ON);
 			}
 			snake_bend();
-			// si no se presiona nada, pero no puedo perder lo que sea que se haya presionado, hago un peek
 			if(pdFALSE == xQueuePeek(joysticks_queue, &joystick, 0)){ // NO HACE NADA ES UN TACHO (voy a dejar este comentario 18/09/2023)
 				head.x--;
 			}
@@ -348,6 +346,6 @@ void snake_generate_food() {
 				}
 			}
 		}
-		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, food.x, food.y, MATRIX_LED_ON); // shows the food on board with "F" (TODO: hacerla titilar para distinguirla?)
+		MATRIX_set_led(MATRIX_DISPLAY_UNIT1, food.x, food.y, MATRIX_LED_ON);
 	}
 }

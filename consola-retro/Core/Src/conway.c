@@ -30,9 +30,6 @@ static uint32_t my_rand(void){
 	return y;
 }
 
-// https://conwaylife.com/wiki/Category:Patterns
-// https://conwaylife.com/wiki/Oscillator
-//
 void conway_init(uint8_t pattern){
 
 	MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
@@ -168,7 +165,7 @@ void conway_play(void) {
 				conway_state = CONWAY_COUNTDOWN;
 				break;
 			case GAME_RESUME:
-				conway_state = CONWAY_PLAYING; // TODO: countdown
+				conway_state = CONWAY_PLAYING;
 				break;
 			case GAME_RESET:
 				conway_init(last_pattern);
@@ -176,7 +173,7 @@ void conway_play(void) {
 				vTaskDelete(NULL);
 				break;
 			case GAME_OVER:
-				// TODO: hacer algun tipo de animacion con la pantalla de game over, mostrarla y morir.
+				MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, GAMEOVER_MSG);
 				conway_state = CONWAY_FIRST_PRINT;
 				vTaskDelete(NULL);
 				break;
@@ -185,10 +182,9 @@ void conway_play(void) {
 		break;
 
 	case CONWAY_GAME_OVER:
-		// TODO: mostrar alguna animacion
-		//MATRIX_print_game_over(MATRIX_DISPLAY_UNIT1);
+		MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, GAMEOVER_MSG);
 		conway_state = CONWAY_FIRST_PRINT;
-		vTaskDelete(NULL); // chau chau adios...
+		vTaskDelete(NULL);
 		break;
 	}
 

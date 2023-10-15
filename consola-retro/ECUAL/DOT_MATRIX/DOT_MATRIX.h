@@ -38,6 +38,13 @@
 #define MATRIX_LED_OFF    0
 #define MATRIX_LED_ON     1
 
+#define WELCOME_MSG 	0
+#define PONG_MSG 		1
+#define TETRIS_MSG		2
+#define SNAKE_MSG		3
+#define CONWAY_MSG		4
+#define GAMEOVER_MSG	5
+
 // DOT MATRIX Configuration Parameter Structure
 typedef struct
 {
@@ -82,12 +89,11 @@ void MATRIX_TMR_OVF_ISR(TIM_HandleTypeDef* htim);
 void MATRIX_SCROLL_SetSpeed(uint8_t au8_MATRIX_Instance, uint16_t au16_SPEED);
 void MATRIX_DisplayMessage(uint8_t au8_MATRIX_Instance, char* ArrayPointer, uint16_t ArraySize);
 // Custom
-void MATRIX_load_buffer(uint8_t au8_MATRIX_Instance);
-void MATRIX_load_buffer_2(uint8_t au8_MATRIX_Instance);
 void MATRIX_display_buffer(uint8_t au8_MATRIX_Instance);
 void MATRIX_set_led(uint8_t au8_MATRIX_Instance, uint8_t x, uint8_t y, uint8_t state);
 void MATRIX_clear_buffer(uint8_t au8_MATRIX_Instance);
 void MATRIX_print_num(uint8_t au8_MATRIX_Instance, uint8_t num);
 void MATRIX_print_game_over(uint8_t au8_MATRIX_Instance);
+void MATRIX_print_msg(uint8_t au8_MATRIX_Instance, uint8_t msg);
 
 #endif /* DOT_MATRIX_H_ */

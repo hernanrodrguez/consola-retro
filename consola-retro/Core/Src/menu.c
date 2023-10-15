@@ -10,6 +10,7 @@
 #include "main.h"
 #include "joystick.h"
 #include "buzzer.h"
+#include "DOT_MATRIX.h"
 
 #include "FreeRTOS.h"
 #include "queue.h"
@@ -63,10 +64,10 @@ uint8_t menu_game_handle(void){
 		}
 		break;
 	case STATE_SCORE:
-		menu_blink(2, "  Puntajes");
+		menu_blink(2, " Puntajes ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
 			BUZZER_TONE();
-			menu_blink_option(2, "  Puntajes");
+			menu_blink_option(2, " Puntajes ");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
 				menu_game_state = STATE_PLAY;
@@ -460,22 +461,24 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 		case STATE_GAMEOVER_HANDLE:
 			switch(menu_gameover_handle()){
 			case 1: // volver a jugar
-				// reinicio los puntajes y eso
 				RESET_GAME_STATE();
-
 				game_data = GAME_RESET;
 				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 
+				MATRIX_CLEAR(MATRIX_DISPLAY_UNIT1);
 				game_play = STATE_COUNTDOWN_SHOW;
 
 				if(game == 3) {
+					MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, CONWAY_MSG);
+					MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 					return 2; // reiniciar hace que vuelvas a elegir el patron
 				}
-
-
 				break;
 			case 2: // salir
 				RESET_GAME_STATE();
+
+			    MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, WELCOME_MSG);
+			    MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 
 				game_play = STATE_COUNTDOWN_SHOW;
 				return 1;

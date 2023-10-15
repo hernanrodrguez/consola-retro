@@ -146,8 +146,8 @@ static void main_task(void *pvParameters){
 									 FOUR_LINES)){
 				delay_ticks = 2000;
 				start_ticks = HAL_GetTick();
-				//buzzer_data = OPENING_MELODY;
-				//xQueueSendToBack(buzzer_queue, &buzzer_data, 0);
+				buzzer_data = OPENING_MELODY;
+				xQueueSendToBack(buzzer_queue, &buzzer_data, 0);
 				main_state = STATE_WELCOME_DELAY;
 			}
 			break;
@@ -201,6 +201,8 @@ static void main_task(void *pvParameters){
 									 " Jugar      Reglas  ",
 									 " Puntajes   Volver  ",
 									 FOUR_LINES)){
+				MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, PONG_MSG);
+				MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 				main_state = STATE_GAME_0_MENU_HANDLE;
 			}
 			break;
@@ -216,6 +218,8 @@ static void main_task(void *pvParameters){
 				main_state = TEST_DIE;
 				break;
 			case 4: // volver
+				MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, WELCOME_MSG);
+				MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 				main_state = STATE_WELCOME_CLEAR;
 				break;
 			}
@@ -231,6 +235,8 @@ static void main_task(void *pvParameters){
 									 " Jugar      Reglas  ",
 									 " Puntajes   Volver  ",
 									 FOUR_LINES)){
+				MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, TETRIS_MSG);
+				MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 				main_state = STATE_GAME_1_MENU_HANDLE;
 			}
 			break;
@@ -246,6 +252,8 @@ static void main_task(void *pvParameters){
 				main_state = TEST_DIE;
 				break;
 			case 4: // volver
+				MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, WELCOME_MSG);
+				MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 				main_state = STATE_WELCOME_CLEAR;
 				break;
 			}
@@ -261,6 +269,8 @@ static void main_task(void *pvParameters){
 									 " Jugar      Reglas  ",
 									 " Puntajes   Volver  ",
 									 FOUR_LINES)){
+				MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, SNAKE_MSG);
+				MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 				main_state = STATE_GAME_2_MENU_HANDLE;
 			}
 			break;
@@ -276,6 +286,8 @@ static void main_task(void *pvParameters){
 				main_state = TEST_DIE;
 				break;
 			case 4: // volver
+				MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, WELCOME_MSG);
+				MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 				main_state = STATE_WELCOME_CLEAR;
 				break;
 			}
@@ -291,6 +303,8 @@ static void main_task(void *pvParameters){
 									 " Jugar      Reglas  ",
 									 " Puntajes   Volver  ",
 									 FOUR_LINES)){
+				MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, CONWAY_MSG);
+				MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 				main_state = STATE_GAME_3_MENU_HANDLE;
 			}
 			break;
@@ -306,6 +320,8 @@ static void main_task(void *pvParameters){
 				main_state = TEST_DIE;
 				break;
 			case 4: // volver
+				MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, WELCOME_MSG);
+				MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 				main_state = STATE_WELCOME_CLEAR;
 				break;
 			}
@@ -379,159 +395,6 @@ static uint32_t my_rand(void){
 	y^= y>>17;
 	y^= y<<5;
 	return y;
-}
-
-static void test_task(void *pvParameters){
-
-    while(1){
-    	MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
-    	for(uint8_t i=0; i<32; i++) {
-    		uint32_t line = my_rand()% 7 + 25;
-    		for(uint8_t j=0; j<line; j++) {
-    			MATRIX_set_led(MATRIX_DISPLAY_UNIT1, i, j, MATRIX_LED_ON);
-    		}
-    	}
-    	MATRIX_display_buffer(MATRIX_DISPLAY_UNIT1);
-    }
-
-
-
-
-
-	/*
-	while(1){
-		//buzzer_play_melody(victoryMelody6, (sizeof(victoryMelody6)/sizeof(note_t)));
-		buzzer_test_melody();
-		vTaskDelay(500/portTICK_PERIOD_MS);
-	}*/
-}
-
-void two_player_game_task(void *pvParameters){
-
-	typedef enum{
-		STATE_PLAYING,
-		STATE_PAUSE
-	}game_status_t;
-
-	static game_status_t game_status = STATE_PLAYING;
-
-	uint8_t game_data;
-	uint8_t joystick;
-
-	while(1){
-
-		switch(game_status){
-		case STATE_PLAYING:
-			if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
-				if(joystick == JOYSTICK_1_UP){
-					game_data = PLAYER_1_POINT;
-					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-				}
-				if(joystick == JOYSTICK_2_UP){
-					game_data = PLAYER_2_POINT;
-					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-				}
-				if(joystick == JOYSTICK_1_RIGHT){
-					game_data = PLAYER_1_WIN;
-					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-					vTaskDelete(NULL);
-				}
-				if(joystick == JOYSTICK_2_RIGHT){
-					game_data = PLAYER_2_WIN;
-					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-					vTaskDelete(NULL);
-				}
-				if(joystick == JOYSTICK_1_PULS || joystick == JOYSTICK_2_PULS){
-					xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
-					game_data = PLAYER_1_PAUSE; // por ahora manejo indistintamente las pausas
-					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-					game_status = STATE_PAUSE;
-					taskYIELD();
-				}
-			}
-			break;
-		case STATE_PAUSE:
-			if(pdTRUE == xQueueReceive(game_queue, &game_data, 0)){
-				if(game_data == GAME_RESUME){
-					game_status = STATE_PLAYING;
-				}
-				if(game_data == GAME_OVER || game_data == GAME_RESET){
-					game_status = STATE_PLAYING;
-					vTaskDelete(NULL);
-				}
-				if(game_data == PLAYER_1_PAUSE){
-					game_data = PLAYER_1_PAUSE;
-					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-					taskYIELD();
-				}
-			}
-			break;
-		}
-	}
-}
-
-void single_player_game_task(void *pvParameters){
-
-	typedef enum{
-		STATE_PLAYING,
-		STATE_PAUSE
-	}game_status_t;
-
-	static game_status_t game_status = STATE_PLAYING;
-
-	uint8_t game_data;
-	uint8_t joystick;
-
-	while(1){
-
-		switch(game_status){
-		case STATE_PLAYING:
-			if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
-				if(joystick == JOYSTICK_1_UP){
-					game_data = SINGLE_PLAYER_POINT;
-					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-				}
-				if(joystick == JOYSTICK_2_UP){
-					game_data = SINGLE_PLAYER_LIVE;
-					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-				}
-				if(joystick == JOYSTICK_1_RIGHT){
-					game_data = SINGLE_PLAYER_WIN;
-					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-					vTaskDelete(NULL);
-				}
-				if(joystick == JOYSTICK_2_RIGHT){
-					game_data = SINGLE_PLAYER_LOST;
-					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-					vTaskDelete(NULL);
-				}
-				if(joystick == JOYSTICK_1_PULS || joystick == JOYSTICK_2_PULS){
-					xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
-					game_data = SINGLE_PLAYER_PAUSE; // por ahora manejo indistintamente las pausas
-					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-					game_status = STATE_PAUSE;
-					taskYIELD();
-				}
-			}
-			break;
-		case STATE_PAUSE:
-			if(pdTRUE == xQueueReceive(game_queue, &game_data, 0)){
-				if(game_data == GAME_RESUME){
-					game_status = STATE_PLAYING;
-				}
-				if(game_data == GAME_OVER || game_data == GAME_RESET){
-					game_status = STATE_PLAYING;
-					vTaskDelete(NULL);
-				}
-				if(game_data == SINGLE_PLAYER_PAUSE){
-					game_data = SINGLE_PLAYER_PAUSE;
-					xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
-					taskYIELD();
-				}
-			}
-			break;
-		}
-	}
 }
 
 void pong_task(void *pvParameters){
@@ -612,6 +475,8 @@ int main(void)
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 
   MATRIX_CLEAR(MATRIX_DISPLAY_UNIT1);
+  MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, WELCOME_MSG);
+  MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 
   xTaskCreate(main_task,
 			  "main_task",
@@ -634,22 +499,6 @@ int main(void)
 			  1,
 			  NULL);
 
-/*
-  xTaskCreate(game_task,
-			  "game_task",
-			  configMINIMAL_STACK_SIZE,
-			  NULL,
-			  1,
-			  NULL);
-*/
-/*
-  xTaskCreate(test_task,
-			  "test_task",
-			  configMINIMAL_STACK_SIZE,
-			  NULL,
-			  1,
-			  NULL);
-*/
   vTaskStartScheduler();
 
   /* USER CODE END 2 */

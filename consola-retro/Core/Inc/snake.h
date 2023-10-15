@@ -13,7 +13,7 @@
 
 #define SNAKE_DEFAULT_LIVES 3
 #define DEFAULT_BODY_LENGTH 5		// the initial length of the snake is 5, and it can reach a maximum length of 29
-#define MAX_BODY_LENGTH 15
+#define MAX_BODY_LENGTH 50
 #define SNAKE_BOARD_WIDTH 31
 #define SNAKE_BOARD_HEIGHT 31
 
