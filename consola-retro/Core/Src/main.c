@@ -120,6 +120,8 @@ static void main_task(void *pvParameters){
 
 		STATE_GAME_3_MENU_SHOW,
 		STATE_GAME_3_MENU_HANDLE,
+		STATE_GAME_3_OPTIONS_SHOW,
+		STATE_GAME_3_OPTIONS,
 		STATE_GAME_3_PLAY,
 		STATE_GAME_3_RULES_SHOW,
 		STATE_GAME_3_RULES_HANDLE,
@@ -129,7 +131,7 @@ static void main_task(void *pvParameters){
 		TEST_DIE
 	} main_state_t;
 
-	static main_state_t main_state = STATE_GAME_3_MENU_SHOW; //STATE_WELCOME_SHOW;
+	static main_state_t main_state = STATE_WELCOME_SHOW; //STATE_WELCOME_SHOW;
 	static main_state_t next_state;
 	static uint32_t start_ticks, delay_ticks;
 	uint8_t buzzer_data;
@@ -294,8 +296,8 @@ static void main_task(void *pvParameters){
 			break;
 		case STATE_GAME_3_MENU_HANDLE:
 			switch(menu_game_handle()){
-			case 1: // jugar
-				main_state = STATE_GAME_3_PLAY;
+			case 1: // opciones de juego conway
+				main_state = STATE_GAME_3_OPTIONS_SHOW;
 				break;
 			case 2: // reglas
 				main_state = STATE_GAME_3_RULES_SHOW;
@@ -308,9 +310,44 @@ static void main_task(void *pvParameters){
 				break;
 			}
 			break;
+		case STATE_GAME_3_OPTIONS_SHOW:
+			if(lcd_progressive_print("       CONWAY       ",
+									 "  Patron de inicio  ",
+									 "  4-8-12   4 Glider ",
+									 " Jason P22   Random ",
+									 FOUR_LINES)){
+				main_state = STATE_GAME_3_OPTIONS;
+			}
+			break;
+		case STATE_GAME_3_OPTIONS:
+			switch(menu_conway_options_handle()){
+			case 1: // 4-8-12 diamond
+				conway_init(CONWAY_DIAMOND4812);
+				main_state = STATE_GAME_3_PLAY;
+				break;
+			case 2: // 4 Glider
+				conway_init(CONWAY_GLIDER4);
+				main_state = STATE_GAME_3_PLAY;
+				break;
+			case 3: // Jason P22
+				conway_init(CONWAY_JASONP22);
+				main_state = STATE_GAME_3_PLAY;
+				break;
+			case 4: // Random
+				conway_init(CONWAY_RANDOM);
+				main_state = STATE_GAME_3_PLAY;
+				break;
+			}
+			break;
+
 		case STATE_GAME_3_PLAY:
-			if(menu_game_play(3, "       CONWAY       ")){
+			switch(menu_game_play(3, "       CONWAY       ")){
+			case 1:
 				main_state = TEST_DIE;
+				break;
+			case 2:
+				main_state = STATE_GAME_3_OPTIONS_SHOW;
+				break;
 			}
 			break;
 		case TEST_DIE:
@@ -518,7 +555,6 @@ void tetris_task(void *pvParameters){
 }
 
 void conway_task(void *pvParameters){
-	conway_init();
 	while(1){
 		conway_play();
 	}
@@ -597,6 +633,7 @@ int main(void)
 			  NULL,
 			  1,
 			  NULL);
+
 /*
   xTaskCreate(game_task,
 			  "game_task",

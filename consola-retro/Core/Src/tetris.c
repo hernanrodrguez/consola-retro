@@ -268,7 +268,7 @@ void write_shape_to_board() {
 }
 
 void check_rows(void) {
-	uint8_t i, j, game_data, buzzer_data, counter = 0;
+	uint8_t i, j, game_data, buzzer_data, counter=0, flag_line=0;
 	for(i=0; i<TETRIS_BOARD_HEIGHT; i++) {
 		uint8_t sum = 0;
 		for(j=0; j<TETRIS_BOARD_WIDTH; j++){
@@ -292,8 +292,11 @@ void check_rows(void) {
 				tetris.board[k][j] = 0;
 				MATRIX_set_led(MATRIX_DISPLAY_UNIT1, 8+j, k, MATRIX_LED_OFF);
 			}
+			flag_line=1;
 			BUZZER_POINT_TONE();
-		} else {
+			game_data = TETRIS_LINE;
+			xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
+		} else if(!flag_line) {
 			BUZZER_TONE();
 		}
 	}

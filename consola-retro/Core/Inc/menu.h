@@ -33,6 +33,7 @@
 #define SEC_1				18
 #define SEC_0				19
 #define GAME_COUNTDOWN 		20
+#define TETRIS_LINE 		21
 
 #define RESET_GAME_STATE() seconds=0; minutes=0; score_1=0; score_2=0; score=0; lives=3
 
@@ -73,6 +74,7 @@ uint8_t menu_game_handle(void);
 uint8_t menu_pause_handle(void);
 uint8_t menu_gameover_handle(void);
 uint8_t menu_game_play(uint8_t game, const char *text);
+uint8_t menu_conway_options_handle(void);
 void menu_blink(uint8_t option, const char *text);
 void menu_blink_option(uint8_t option, const char *text);
 

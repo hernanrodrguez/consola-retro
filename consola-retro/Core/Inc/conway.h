@@ -10,9 +10,14 @@
 
 #include <stdint.h>
 
+#define CONWAY_DIAMOND4812 	0
+#define CONWAY_GLIDER4	   	1
+#define CONWAY_JASONP22 	2
+#define CONWAY_RANDOM 		3
+
 void conway_evolve(void);
 
-void conway_init(void);
+void conway_init(uint8_t pattern);
 
 void conway_play(void);
 
@@ -26,6 +31,5 @@ uint8_t get_cell_state(uint32_t row, uint8_t col);
 
 void conway_print(void);
 
-//void init_matrix(uint8_t *matrix);
 
 #endif /* INC_CONWAY_H_ */

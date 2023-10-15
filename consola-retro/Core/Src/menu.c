@@ -294,18 +294,34 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 				BUZZER_TONE();
 			} else if(countdown<0){
 				BUZZER_LONG_TONE();
-				if(game == 0){ // el pong es el unico juego 1v1
+				switch(game){
+				case 0:
 					lcd_print(text,
 							  "  Partida en juego  ",
 							  "   P1:00     P2:00  ",
 							  "        00:00       ");
 					lcd_print_score(score_1, score_2);
-				} else {
+					break;
+				case 1:
 					lcd_print(text,
 							  "  Partida en juego  ",
-							  "   Pts:00  Vidas:3  ", // el tetris por como esta planteado no tiene vidas
+							  "    Puntos:0000     ",
+							  "        00:00       ");
+					lcd_print_pts(score);
+					break;
+				case 2:
+					lcd_print(text,
+							  "  Partida en juego  ",
+							  "   Pts:00  Vidas:3  ",
 							  "        00:00       ");
 					lcd_print_pts_lives(score, lives);
+					break;
+				case 3:
+					lcd_print(text,
+							  " El juego de la vida",
+							  "                    ",
+							  "        00:00       ");
+					break;
 				}
 				if(seconds == 0 && minutes == 0){ // juego nuevo
 					game_data = GAME_START;
@@ -324,8 +340,15 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 	case STATE_PLAYING_HANDLE:
 		if(pdTRUE == xQueueReceive(game_queue, &game_data, 0)){
 			switch(game_data){
+			case TETRIS_LINE:
+				score+=100;
+				break;
 			case SINGLE_PLAYER_POINT:
-				score++;
+				if(game == 1){
+					score+=10;
+				} else {
+					score++;
+				}
 				break;
 			case SINGLE_PLAYER_LIVE:
 				lives--;
@@ -355,10 +378,16 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 				return 1;
 				break;
 			}
-			if(game == 0){
+			switch(game){
+			case 0:
 				lcd_print_score(score_1, score_2);
-			} else {
+				break;
+			case 1:
+				lcd_print_pts(score);
+				break;
+			case 2:
 				lcd_print_pts_lives(score, lives);
+				break;
 			}
 		}
 		if(HAL_GetTick() - start_ticks > ONE_SECOND){
@@ -438,6 +467,12 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
 
 				game_play = STATE_COUNTDOWN_SHOW;
+
+				if(game == 3) {
+					return 2; // reiniciar hace que vuelvas a elegir el patron
+				}
+
+
 				break;
 			case 2: // salir
 				RESET_GAME_STATE();
@@ -566,6 +601,86 @@ uint8_t menu_pause_handle(void){
 				pause_state = STATE_SCORES;
 			} else if(joystick == JOYSTICK_1_UP){
 				pause_state = STATE_RESET;
+			}
+		}
+		break;
+	}
+	return 0;
+}
+
+uint8_t menu_conway_options_handle(void){
+	typedef enum{
+		CONWAY_4_8_12,
+		CONWAY_4_GLIDER,
+		CONWAY_JASON_P22,
+		CONWAY_RANDOM
+	}conway_menu_state_t;
+
+	uint8_t joystick, buzzer_data;
+	static conway_menu_state_t conway_menu_state = CONWAY_4_8_12;
+
+	switch(conway_menu_state){
+	case CONWAY_4_8_12:
+		menu_blink(0, "  4-8-12  ");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
+			menu_blink_option(0, "  4-8-12  ");
+			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+				conway_menu_state = CONWAY_4_8_12;
+				return CONWAY_4_8_12+1;
+			} else if(joystick == JOYSTICK_1_RIGHT){
+				conway_menu_state = CONWAY_4_GLIDER;
+			} else if(joystick == JOYSTICK_1_DOWN){
+				conway_menu_state = CONWAY_JASON_P22;
+			}
+		}
+		break;
+	case CONWAY_4_GLIDER:
+		menu_blink(1, " 4 Glider ");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
+			menu_blink_option(1, " 4 Glider ");
+			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+				conway_menu_state = CONWAY_4_8_12;
+				return CONWAY_4_GLIDER+1;
+			} else if(joystick == JOYSTICK_1_LEFT){
+				conway_menu_state = CONWAY_4_8_12;
+			} else if(joystick == JOYSTICK_1_DOWN){
+				conway_menu_state = CONWAY_RANDOM;
+			}
+		}
+		break;
+	case CONWAY_JASON_P22:
+		menu_blink(2, " Jason P22");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
+			menu_blink_option(2, " Jason P22");
+			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+				conway_menu_state = CONWAY_4_8_12;
+				return CONWAY_JASON_P22+1;
+			} else if(joystick == JOYSTICK_1_RIGHT){
+				conway_menu_state = CONWAY_RANDOM;
+			} else if(joystick == JOYSTICK_1_UP){
+				conway_menu_state = CONWAY_4_8_12;
+			}
+		}
+		break;
+	case CONWAY_RANDOM:
+		menu_blink(3, "   Random ");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
+			menu_blink_option(3, "   Random ");
+			if(joystick == JOYSTICK_1_PULS){
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+				conway_menu_state = CONWAY_4_8_12;
+				return CONWAY_RANDOM+1;
+			} else if(joystick == JOYSTICK_1_LEFT){
+				conway_menu_state = CONWAY_JASON_P22;
+			} else if(joystick == JOYSTICK_1_UP){
+				conway_menu_state = CONWAY_4_GLIDER;
 			}
 		}
 		break;

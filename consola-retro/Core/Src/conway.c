@@ -16,37 +16,90 @@
 
 uint32_t actual[32];
 uint32_t futuro[32];
+uint8_t last_pattern;
 
 extern QueueHandle_t joysticks_queue;
 extern QueueHandle_t game_queue;
 extern QueueHandle_t buzzer_queue;
 
 static uint32_t my_rand(void){
-	static uint32_t y = 1673038;
-	y^= y<<13;
-	y^= y>>17;
-	y^= y<<5;
+	uint32_t y = HAL_GetTick();
+	y^= y<<(HAL_GetTick()%13);
+	y^= y>>(HAL_GetTick()%17);
+	y^= y<<(HAL_GetTick()%5);
 	return y;
 }
 
-void conway_init(void){
-	for(uint8_t i=0; i<11; i++){
-		actual[i] = 0;
+// https://conwaylife.com/wiki/Category:Patterns
+// https://conwaylife.com/wiki/Oscillator
+//
+void conway_init(uint8_t pattern){
+
+	MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
+	MATRIX_CLEAR(MATRIX_DISPLAY_UNIT1);
+
+	last_pattern = pattern;
+
+	switch(pattern){
+	case CONWAY_DIAMOND4812:
+		for(uint8_t i=0; i<11; i++){
+			actual[i] = 0;
+		}
+		actual[11] = 0b00000000000000111100000000000000;
+		actual[12] = 0b00000000000000000000000000000000;
+		actual[13] = 0b00000000000011111111000000000000;
+		actual[14] = 0b00000000000000000000000000000000;
+		actual[15] = 0b00000000001111111111110000000000;
+		actual[16] = 0b00000000000000000000000000000000;
+		actual[17] = 0b00000000000011111111000000000000;
+		actual[18] = 0b00000000000000000000000000000000;
+		actual[19] = 0b00000000000000111100000000000000;
+		for(uint8_t i=20; i<32; i++){
+			actual[i] = 0;
+		}
+		break;
+	case CONWAY_GLIDER4:
+		for(uint8_t i=0; i<11; i++){
+			actual[i] = 0;
+		}
+		actual[11] = 0b00000000001000000000000000000000;
+		actual[12] = 0b00000000001000000000000000000000;
+		actual[13] = 0b00000000111000000000000000000000;
+		actual[14] = 0b00000000000000000000000000000000;
+		actual[15] = 0b00000000000000111000000000000000;
+		actual[16] = 0b00000000000000010000000000000000;
+		actual[17] = 0b00000000000000000000111000000000;
+		actual[18] = 0b00000000000000000000100000000000;
+		actual[19] = 0b00000000000000000000100000000000;
+		for(uint8_t i=20; i<32; i++){
+			actual[i] = 0;
+		}
+		break;
+	case CONWAY_JASONP22:
+		for(uint8_t i=0; i<11; i++){
+			actual[i] = 0;
+		}
+		actual[11] = 0b00011000000000000000000000000000;
+		actual[12] = 0b00001000000000000000000000000000;
+		actual[13] = 0b00001010000000000000111000000000;
+		actual[14] = 0b00000110001000000001000100000000;
+		actual[15] = 0b00000000010110000001000010000000;
+		actual[16] = 0b00000000100001000000110100000000;
+		actual[17] = 0b00000000010001000000001000110000;
+		actual[18] = 0b00000000001110000000000000101000;
+		actual[19] = 0b00000000000000000000000000001000;
+		actual[20] = 0b00000000000000000000000000001100;
+		for(uint8_t i=21; i<32; i++){
+			actual[i] = 0;
+		}
+		break;
+	case CONWAY_RANDOM:
+		for(uint8_t i=0; i<32; i++){
+			actual[i] = (my_rand()%8)<<(my_rand()%24);
+		}
+		break;
 	}
 
-	actual[11] = 0b00000000000000000000010000000000;
-	actual[12] = 0b00000000000000000001010000000000;
-	actual[13] = 0b00000000011000000110000000110000;
-	actual[14] = 0b00000000100010000110000000110000;
-	actual[15] = 0b01100001000001000110000000000000;
-	actual[16] = 0b01100001000101100001010000000000;
-	actual[17] = 0b00000001000001000000010000000000;
-	actual[18] = 0b00000000100010000000000000000000;
-	actual[19] = 0b00000000011000000000000000000000;
-
-	for(uint8_t i=20; i<32; i++){
-		actual[i] = 0;
-	}
 }
 
 void conway_play(void) {
@@ -118,6 +171,7 @@ void conway_play(void) {
 				conway_state = CONWAY_PLAYING; // TODO: countdown
 				break;
 			case GAME_RESET:
+				conway_init(last_pattern);
 				conway_state = CONWAY_FIRST_PRINT;
 				vTaskDelete(NULL);
 				break;
