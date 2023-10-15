@@ -33,6 +33,7 @@
 #include "pong.h"
 #include "snake.h"
 #include "tetris.h"
+#include "conway.h"
 #include "buzzer.h"
 #include <stdio.h>
 /* USER CODE END Includes */
@@ -128,7 +129,7 @@ static void main_task(void *pvParameters){
 		TEST_DIE
 	} main_state_t;
 
-	static main_state_t main_state = STATE_WELCOME_SHOW; //STATE_WELCOME_SHOW;
+	static main_state_t main_state = STATE_GAME_3_MENU_SHOW; //STATE_WELCOME_SHOW;
 	static main_state_t next_state;
 	static uint32_t start_ticks, delay_ticks;
 	uint8_t buzzer_data;
@@ -162,7 +163,7 @@ static void main_task(void *pvParameters){
 			if(lcd_progressive_print("   MENU PRINCIPAL   ",
 									 "Seleccione un juego:",
 									 "  Pong      Tetris  ",
-									 "  Snake     Space   ",
+									 "  Snake     Conway  ",
 									 FOUR_LINES)){
 				main_state = STATE_MENU_HANDLE;
 			}
@@ -283,7 +284,7 @@ static void main_task(void *pvParameters){
 			}
 			break;
 		case STATE_GAME_3_MENU_SHOW:
-			if(lcd_progressive_print("       SPACE        ",
+			if(lcd_progressive_print("       CONWAY       ",
 									 "Instrucciones del ju",
 									 " Jugar      Reglas  ",
 									 " Puntajes   Volver  ",
@@ -308,7 +309,7 @@ static void main_task(void *pvParameters){
 			}
 			break;
 		case STATE_GAME_3_PLAY:
-			if(menu_game_play(3, "       SPACE        ")){
+			if(menu_game_play(3, "       CONWAY       ")){
 				main_state = TEST_DIE;
 			}
 			break;
@@ -513,6 +514,13 @@ void snake_task(void *pvParameters){
 void tetris_task(void *pvParameters){
 	while(1){
 		tetris_play();
+	}
+}
+
+void conway_task(void *pvParameters){
+	conway_init();
+	while(1){
+		conway_play();
 	}
 }
 

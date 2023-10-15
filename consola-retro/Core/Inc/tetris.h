@@ -9,6 +9,7 @@
 #define INC_TETRIS_H_
 
 #include <stdint.h>
+#include <stdlib.h>
 
 #define TETRIS_BOARD_WIDTH  16
 #define TETRIS_BOARD_HEIGHT 32
