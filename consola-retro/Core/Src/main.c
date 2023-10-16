@@ -197,7 +197,7 @@ static void main_task(void *pvParameters){
 			break;
 		case STATE_GAME_0_MENU_SHOW:
 			if(lcd_progressive_print("        PONG        ",
-									 "Instrucciones del ju",
+									 "Juego creado en 1972",
 									 " Jugar      Reglas  ",
 									 " Puntajes   Volver  ",
 									 FOUR_LINES)){
@@ -229,9 +229,29 @@ static void main_task(void *pvParameters){
 				main_state = TEST_DIE;
 			}
 			break;
+		case STATE_GAME_0_RULES_SHOW:
+			if(lcd_progressive_print("El juego simula un  ",
+									 "tenis de mesa. Cada ",
+									 "jugador controla su ",
+									 "   Jugar    Volver  ",
+									 ONE_LINE)){
+				main_state = STATE_GAME_0_RULES_HANDLE;
+
+			}
+			break;
+		case STATE_GAME_0_RULES_HANDLE:
+			switch(menu_rules_handle(0)){
+			case 1: // jugar
+				main_state = STATE_GAME_0_PLAY;
+				break;
+			case 2: // volver
+				main_state = STATE_GAME_0_MENU_SHOW;
+				break;
+			}
+			break;
 		case STATE_GAME_1_MENU_SHOW:
 			if(lcd_progressive_print("       TETRIS       ",
-									 "Instrucciones del ju",
+									 "Juego creado en 1984",
 									 " Jugar      Reglas  ",
 									 " Puntajes   Volver  ",
 									 FOUR_LINES)){
@@ -263,9 +283,30 @@ static void main_task(void *pvParameters){
 				main_state = TEST_DIE;
 			}
 			break;
+		case STATE_GAME_1_RULES_SHOW:
+			if(lcd_progressive_print("Desplaza la pieza a ",
+									 "izquierda y derecha ",
+									 "mientras cae. Para  ",
+									 "   Jugar    Volver  ",
+									 ONE_LINE)){
+				main_state = STATE_GAME_1_RULES_HANDLE;
+			}
+			break;
+		case STATE_GAME_1_RULES_HANDLE:
+			switch(menu_rules_handle(1)){
+			case 1: // jugar
+				main_state = STATE_GAME_1_PLAY;
+				break;
+			case 2: // volver
+				MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, WELCOME_MSG);
+				MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
+				main_state = STATE_GAME_1_MENU_SHOW;
+				break;
+			}
+			break;
 		case STATE_GAME_2_MENU_SHOW:
 			if(lcd_progressive_print("       SNAKE        ",
-									 "Instrucciones del ju",
+									 "Juego creado en 1976",
 									 " Jugar      Reglas  ",
 									 " Puntajes   Volver  ",
 									 FOUR_LINES)){
@@ -297,9 +338,28 @@ static void main_task(void *pvParameters){
 				main_state = TEST_DIE;
 			}
 			break;
+		case STATE_GAME_2_RULES_SHOW:
+			if(lcd_progressive_print("Controla la vibora  ",
+									 "para comer las fruta",
+									 "Si chocas con el bor",
+									 "   Jugar    Volver  ",
+									 ONE_LINE)){
+				main_state = STATE_GAME_2_RULES_HANDLE;
+			}
+			break;
+		case STATE_GAME_2_RULES_HANDLE:
+			switch(menu_rules_handle(2)){
+			case 1: // jugar
+				main_state = STATE_GAME_2_PLAY;
+				break;
+			case 2: // volver
+				main_state = STATE_GAME_2_MENU_SHOW;
+				break;
+			}
+			break;
 		case STATE_GAME_3_MENU_SHOW:
 			if(lcd_progressive_print("       CONWAY       ",
-									 "Instrucciones del ju",
+									 "Juego creado en 1970",
 									 " Jugar      Reglas  ",
 									 " Puntajes   Volver  ",
 									 FOUR_LINES)){
@@ -363,6 +423,25 @@ static void main_task(void *pvParameters){
 				break;
 			case 2:
 				main_state = STATE_GAME_3_OPTIONS_SHOW;
+				break;
+			}
+			break;
+		case STATE_GAME_3_RULES_SHOW:
+			if(lcd_progressive_print("Automata celular don",
+									 "de las celulas evolu",
+									 "cionan segun reglas ",
+									 "   Jugar    Volver  ",
+									 ONE_LINE)){
+				main_state = STATE_GAME_3_RULES_HANDLE;
+			}
+			break;
+		case STATE_GAME_3_RULES_HANDLE:
+			switch(menu_rules_handle(3)){
+			case 1: // jugar
+				main_state = STATE_GAME_3_OPTIONS_SHOW;
+				break;
+			case 2: // volver
+				main_state = STATE_GAME_3_MENU_SHOW;
 				break;
 			}
 			break;
@@ -491,14 +570,14 @@ int main(void)
 			  NULL,
 			  1,
 			  NULL);
-
+/*
   xTaskCreate(buzzer_task,
 			  "buzzer_task",
 			  configMINIMAL_STACK_SIZE,
 			  NULL,
 			  1,
 			  NULL);
-
+*/
   vTaskStartScheduler();
 
   /* USER CODE END 2 */

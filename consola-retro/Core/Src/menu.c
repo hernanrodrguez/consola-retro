@@ -19,6 +19,43 @@ extern QueueHandle_t joysticks_queue;
 extern QueueHandle_t game_queue;
 extern QueueHandle_t buzzer_queue;
 
+const char rules_pong[6][20] = {
+		"El juego simula un  ",
+		"tenis de mesa. Cada ",
+		"jugador controla su ",
+		"paleta verticalmente",
+		"El primero en llegar",
+		"a 5 puntos, gana.   "
+};
+
+const char rules_snake[5][20] = {
+		"Controla la vibora  ",
+		"para comer las fruta",
+		"Si chocas con el bor",
+		"de perdes una vida. ",
+		"Presiona para pausar"
+};
+
+const char rules_tetris[6][20] = {
+		"Desplaza la pieza a ",
+		"izquierda y derecha ",
+		"mientras cae. Para  ",
+		"rotarla, move el joy",
+		"stick hacia arriba. ",
+		"Presiona para pausar"
+};
+
+const char rules_conway[8][20] = {
+		"Automata celular don",
+		"de las celulas evolu",
+		"cionan segun reglas ",
+		"simples basadas en  ",
+		"sus vecinas en una  ",
+		"cuadricula, usado en",
+		"matematicas y cs de ",
+		"la computacion      "
+};
+
 uint8_t menu_game_handle(void){
 	typedef enum{
 		STATE_PLAY,
@@ -684,6 +721,113 @@ uint8_t menu_conway_options_handle(void){
 				conway_menu_state = CONWAY_JASON_P22;
 			} else if(joystick == JOYSTICK_1_UP){
 				conway_menu_state = CONWAY_4_GLIDER;
+			}
+		}
+		break;
+	}
+	return 0;
+}
+
+uint8_t menu_rules_handle (uint8_t game) {
+	typedef enum{
+		STATE_RULES_PLAY,
+		STATE_RULES_BACK
+	}rules_state_t;
+
+	static rules_state_t rules_state = STATE_RULES_PLAY;
+	static uint8_t index_rules = 2;
+	uint8_t joystick, buzzer_data, limit;
+	const char (*lines)[20];
+
+	switch(game){
+	case 0:
+		lines = rules_pong;
+		limit = LINES_RULES_PONG;
+		break;
+	case 1:
+		lines = rules_tetris;
+		limit = LINES_RULES_TETRIS;
+		break;
+	case 2:
+		lines = rules_snake;
+		limit = LINES_RULES_SNAKE;
+		break;
+	case 3:
+		lines = rules_conway;
+		limit = LINES_RULES_CONWAY;
+		break;
+	}
+
+	switch(rules_state){
+	case STATE_RULES_PLAY:
+		menu_blink(2, "   Jugar  ");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
+			menu_blink_option(2, "   Jugar  ");
+			switch(joystick){
+			case JOYSTICK_1_PULS:
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+				rules_state = STATE_RULES_PLAY;
+				return STATE_RULES_PLAY+1;
+				break;
+			case JOYSTICK_1_RIGHT:
+				rules_state = STATE_RULES_BACK;
+				break;
+			case JOYSTICK_1_DOWN:
+				if(index_rules < limit-1){
+					index_rules++;
+					lcd_print(lines[index_rules-2],
+							  lines[index_rules-1],
+							  lines[index_rules],
+							  "   Jugar     Salir  ");
+				}
+
+				break;
+			case JOYSTICK_1_UP:
+				if(index_rules > 2){
+					index_rules--;
+					lcd_print(lines[index_rules-2],
+							  lines[index_rules-1],
+							  lines[index_rules],
+							  "   Jugar     Salir  ");
+				}
+
+				break;
+			}
+		}
+		break;
+	case STATE_RULES_BACK:
+		menu_blink(3, "   Salir  ");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
+			menu_blink_option(3, "   Salir  ");
+			switch(joystick){
+			case JOYSTICK_1_PULS:
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+				rules_state = STATE_RULES_PLAY;
+				return STATE_RULES_BACK+1;
+				break;
+			case JOYSTICK_1_LEFT:
+				rules_state = STATE_RULES_PLAY;
+				break;
+			case JOYSTICK_1_DOWN:
+				if(index_rules < limit){
+					index_rules++;
+					lcd_print(lines[index_rules],
+							  lines[index_rules+1],
+							  lines[index_rules+2],
+							  "   Jugar     Salir  ");
+				}
+				break;
+			case JOYSTICK_1_UP:
+				if(index_rules > 2){
+					index_rules--;
+					lcd_print(lines[index_rules],
+							  lines[index_rules+1],
+							  lines[index_rules+2],
+							  "   Jugar     Salir  ");
+				}
+				break;
 			}
 		}
 		break;
