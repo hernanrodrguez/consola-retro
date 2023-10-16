@@ -23,14 +23,6 @@ extern QueueHandle_t joysticks_queue;
 extern QueueHandle_t game_queue;
 extern QueueHandle_t buzzer_queue;
 
-static uint32_t my_rand(void){
-	uint32_t y = HAL_GetTick();
-	y^= y<<13;
-	y^= y>>17;
-	y^= y<<5;
-	return y;
-}
-
 void snake_init(void) {
 	food = (point_t){0, 0, 0};
 	bend[0] = head = SPAWN_POINT;

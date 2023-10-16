@@ -468,7 +468,7 @@ static void joysticks_task(void *pvParameters){
 	}
 }
 
-static uint32_t my_rand(void){
+uint32_t my_rand(void){
 	uint32_t y = HAL_GetTick();
 	y^= y<<13;
 	y^= y>>17;

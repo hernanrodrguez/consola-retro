@@ -22,14 +22,6 @@ extern QueueHandle_t joysticks_queue;
 extern QueueHandle_t game_queue;
 extern QueueHandle_t buzzer_queue;
 
-static uint32_t my_rand(void){
-	uint32_t y = HAL_GetTick();
-	y^= y<<13;
-	y^= y>>17;
-	y^= y<<5;
-	return y;
-}
-
 static void regen_ball(void){
 	ball.x = 15;
 	ball.y = (my_rand()%5) + 13;

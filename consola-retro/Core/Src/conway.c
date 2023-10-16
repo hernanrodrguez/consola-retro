@@ -22,14 +22,6 @@ extern QueueHandle_t joysticks_queue;
 extern QueueHandle_t game_queue;
 extern QueueHandle_t buzzer_queue;
 
-static uint32_t my_rand(void){
-	uint32_t y = HAL_GetTick();
-	y^= y<<(HAL_GetTick()%13);
-	y^= y>>(HAL_GetTick()%17);
-	y^= y<<(HAL_GetTick()%5);
-	return y;
-}
-
 void conway_init(uint8_t pattern){
 
 	MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);

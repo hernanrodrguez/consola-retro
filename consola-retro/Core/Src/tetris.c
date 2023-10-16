@@ -45,14 +45,6 @@ extern QueueHandle_t joysticks_queue;
 extern QueueHandle_t game_queue;
 extern QueueHandle_t buzzer_queue;
 
-static uint32_t my_rand(void){
-	uint32_t y = HAL_GetTick();
-	y^= y<<13;
-	y^= y>>17;
-	y^= y<<5;
-	return y;
-}
-
 void tetris_init(void) {
 	tetris = (tetris_t){{{0}}, 0, DEFAULT_TIMER};
 	get_new_shape();
@@ -187,14 +179,13 @@ void tetris_play(void) {
 				tetris_state = TETRIS_COUNTDOWN;
 				break;
 			case GAME_RESUME:
-				tetris_state = TETRIS_PLAYING; // TODO: countdown
+				tetris_state = TETRIS_PLAYING;
 				break;
 			case GAME_RESET:
 				tetris_state = TETRIS_FIRST_PRINT;
 				vTaskDelete(NULL);
 				break;
 			case GAME_OVER:
-				// TODO: hacer algun tipo de animacion con la pantalla de game over, mostrarla y morir.
 				MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, GAMEOVER_MSG);
 				tetris_state = TETRIS_FIRST_PRINT;
 				vTaskDelete(NULL);
@@ -204,10 +195,9 @@ void tetris_play(void) {
 		break;
 
 	case TETRIS_GAME_OVER:
-		// TODO: mostrar alguna animacion
 		MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, GAMEOVER_MSG);
 		tetris_state = TETRIS_FIRST_PRINT;
-		vTaskDelete(NULL); // chau chau adios...
+		vTaskDelete(NULL);
 		break;
 	}
 }
