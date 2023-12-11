@@ -779,7 +779,7 @@ uint8_t menu_rules_handle (uint8_t game) {
 					lcd_print(lines[index_rules-2],
 							  lines[index_rules-1],
 							  lines[index_rules],
-							  "   Jugar     Salir  ");
+							  "   Jugar    Volver  ");
 				}
 
 				break;
@@ -789,7 +789,7 @@ uint8_t menu_rules_handle (uint8_t game) {
 					lcd_print(lines[index_rules-2],
 							  lines[index_rules-1],
 							  lines[index_rules],
-							  "   Jugar     Salir  ");
+							  "   Jugar    Volver  ");
 				}
 
 				break;
@@ -797,10 +797,10 @@ uint8_t menu_rules_handle (uint8_t game) {
 		}
 		break;
 	case STATE_RULES_BACK:
-		menu_blink(3, "   Salir  ");
+		menu_blink(3, "  Volver  ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
 			BUZZER_TONE();
-			menu_blink_option(3, "   Salir  ");
+			menu_blink_option(3, "  Volver  ");
 			switch(joystick){
 			case JOYSTICK_1_PULS:
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
@@ -816,7 +816,7 @@ uint8_t menu_rules_handle (uint8_t game) {
 					lcd_print(lines[index_rules],
 							  lines[index_rules+1],
 							  lines[index_rules+2],
-							  "   Jugar     Salir  ");
+							  "   Jugar    Volver  ");
 				}
 				break;
 			case JOYSTICK_1_UP:
@@ -825,7 +825,7 @@ uint8_t menu_rules_handle (uint8_t game) {
 					lcd_print(lines[index_rules],
 							  lines[index_rules+1],
 							  lines[index_rules+2],
-							  "   Jugar     Salir  ");
+							  "   Jugar    Volver  ");
 				}
 				break;
 			}
