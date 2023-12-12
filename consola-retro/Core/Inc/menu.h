@@ -81,7 +81,10 @@ uint8_t menu_gameover_handle(void);
 uint8_t menu_game_play(uint8_t game, const char *text);
 uint8_t menu_conway_options_handle(void);
 uint8_t menu_rules_handle (uint8_t game);
+uint8_t menu_records_handle (uint8_t game);
 void menu_blink(uint8_t option, const char *text);
 void menu_blink_option(uint8_t option, const char *text);
+void save_reg(uint8_t game, uint8_t val_1, uint8_t val_2);
+uint8_t read_reg(uint8_t game);
 
 #endif /* INC_MENU_H_ */

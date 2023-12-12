@@ -68,6 +68,7 @@ void conway_task(void *pvParameters);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+
 #define BUZZER_Pin GPIO_PIN_1
 #define BUZZER_GPIO_Port GPIOA
 #define SS_SD_Pin GPIO_PIN_3
@@ -90,6 +91,7 @@ void conway_task(void *pvParameters);
 #define JOYSTICK_1_LEFT_GPIO_Port GPIOA
 #define JOYSTICK_1_RIGHT_Pin GPIO_PIN_11
 #define JOYSTICK_1_RIGHT_GPIO_Port GPIOA
+
 /* USER CODE BEGIN Private defines */
 
 #define TEST_DEF 0

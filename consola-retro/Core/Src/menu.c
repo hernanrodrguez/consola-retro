@@ -19,6 +19,8 @@ extern QueueHandle_t joysticks_queue;
 extern QueueHandle_t game_queue;
 extern QueueHandle_t buzzer_queue;
 
+extern RTC_HandleTypeDef hrtc;
+
 const char rules_pong[6][20] = {
 		"El juego simula un  ",
 		"tenis de mesa. Cada ",
@@ -768,6 +770,7 @@ uint8_t menu_rules_handle (uint8_t game) {
 			case JOYSTICK_1_PULS:
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
 				rules_state = STATE_RULES_PLAY;
+				index_rules = 2;
 				return STATE_RULES_PLAY+1;
 				break;
 			case JOYSTICK_1_RIGHT:
@@ -805,6 +808,7 @@ uint8_t menu_rules_handle (uint8_t game) {
 			case JOYSTICK_1_PULS:
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
 				rules_state = STATE_RULES_PLAY;
+				index_rules = 2;
 				return STATE_RULES_BACK+1;
 				break;
 			case JOYSTICK_1_LEFT:
@@ -827,6 +831,58 @@ uint8_t menu_rules_handle (uint8_t game) {
 							  lines[index_rules+2],
 							  "   Jugar    Volver  ");
 				}
+				break;
+			}
+		}
+		break;
+	}
+	return 0;
+}
+
+uint8_t menu_records_handle (uint8_t game) {
+	typedef enum{
+		STATE_RECORDS_PLAY,
+		STATE_RECORDS_BACK
+	}records_state_t;
+
+	static records_state_t records_state = STATE_RECORDS_PLAY;
+	uint8_t joystick, buzzer_data;
+
+	if(read_reg(game) == 0) {
+		records_state = STATE_RECORDS_BACK;
+	}
+
+	switch(records_state){
+	case STATE_RECORDS_PLAY:
+		menu_blink(2, "   Jugar  ");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
+			menu_blink_option(2, "   Jugar  ");
+			switch(joystick){
+			case JOYSTICK_1_PULS:
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+				records_state = STATE_RECORDS_PLAY;
+				return STATE_RECORDS_PLAY+1;
+				break;
+			case JOYSTICK_1_RIGHT:
+				records_state = STATE_RECORDS_BACK;
+				break;
+			}
+		}
+		break;
+	case STATE_RECORDS_BACK:
+		menu_blink(3, "  Volver  ");
+		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
+			BUZZER_TONE();
+			menu_blink_option(3, "  Volver  ");
+			switch(joystick){
+			case JOYSTICK_1_PULS:
+				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
+				records_state = STATE_RECORDS_PLAY;
+				return STATE_RECORDS_BACK+1;
+				break;
+			case JOYSTICK_1_LEFT:
+				records_state = STATE_RECORDS_PLAY;
 				break;
 			}
 		}
@@ -881,4 +937,65 @@ void menu_blink(uint8_t option, const char *text){
 		}
 		break;
 	}
+}
+
+void save_reg(uint8_t game, uint8_t val_1, uint8_t val_2){
+	uint32_t value;
+	switch(game){
+		case 0:
+			value = 0xAAAA;
+			HAL_RTCEx_BKUPWrite(&hrtc, 1, value);
+			break;
+		case 1:
+			value = 0xBBBB;
+			HAL_RTCEx_BKUPWrite(&hrtc, 2, value);
+			break;
+		case 2:
+			value = 0xCCCC;
+			HAL_RTCEx_BKUPWrite(&hrtc, 3, value);
+			break;
+		case 3:
+			value = 0xDDDD;
+			HAL_RTCEx_BKUPWrite(&hrtc, 4, value);
+			break;
+	}
+}
+
+uint8_t read_reg(uint8_t game){
+	uint32_t value;
+	switch(game){
+		case 0:
+			value = HAL_RTCEx_BKUPRead(&hrtc, 1);
+			if(value == 0xAAAA) {
+				return 1;
+			} else {
+				return 0;
+			}
+			break;
+		case 1:
+			value = HAL_RTCEx_BKUPRead(&hrtc, 2);
+			if(value == 0xBBBB) {
+				return 1;
+			} else {
+				return 0;
+			}
+			break;
+		case 2:
+			value = HAL_RTCEx_BKUPRead(&hrtc, 3);
+			if(value == 0xCCCC) {
+				return 1;
+			} else {
+				return 0;
+			}
+			break;
+		case 3:
+			value = HAL_RTCEx_BKUPRead(&hrtc, 4);
+			if(value == 0xDDDD) {
+				return 1;
+			} else {
+				return 0;
+			}
+			break;
+	}
+	return 0;
 }
