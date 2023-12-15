@@ -91,5 +91,7 @@ void set_pong_score(uint32_t *reg, uint8_t val, uint8_t pos);
 uint8_t get_pong_score(uint8_t n);
 void save_tetris_score(uint32_t score);
 uint32_t get_tetris_score(uint8_t n);
+void save_snake_score(uint32_t score);
+uint32_t get_snake_score(uint8_t n);
 
 #endif /* INC_MENU_H_ */

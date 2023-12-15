@@ -509,7 +509,7 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 					save_tetris_score(score/10);
 					break;
 				case 2:
-					//save_snake_score(score);
+					save_snake_score(score);
 					break;
 				}
 
@@ -885,6 +885,13 @@ uint8_t menu_records_handle (uint8_t game) {
 				records_state = STATE_RECORDS_PLAY;
 			}
 			break;
+		case 2:
+			for (uint8_t i=0; i<4; i++) {
+				score = get_snake_score(i);
+				lcd_print_snake_score(score, i);
+				records_state = STATE_RECORDS_PLAY;
+			}
+			break;
 		}
 	case STATE_RECORDS_PLAY:
 		menu_blink(2, "   Jugar  ");
@@ -970,6 +977,31 @@ void menu_blink(uint8_t option, const char *text){
 		}
 		break;
 	}
+}
+
+void save_snake_score(uint32_t score){
+	uint32_t reg;
+	uint32_t new_val;
+
+	new_val = (uint32_t)score & 0x7F;
+	reg = HAL_RTCEx_BKUPRead(&hrtc, 7);
+
+	reg = (reg <<7) | (new_val & 0x7F);
+	HAL_RTCEx_BKUPWrite(&hrtc, 7, reg);
+}
+
+uint32_t get_snake_score(uint8_t n) {
+    if (n < 0 || n > 9) {
+        return 0;
+    }
+
+    uint32_t reg;
+	reg = HAL_RTCEx_BKUPRead(&hrtc, 7);
+
+    reg >>= (n * 7);
+    uint8_t ret = reg & 0x7F;
+
+    return ret;
 }
 
 void save_tetris_score(uint32_t score){

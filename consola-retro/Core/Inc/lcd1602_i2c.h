@@ -99,6 +99,7 @@ void lcd_print_pts_lives(uint32_t score, uint8_t lives);
 void lcd_print_pts(uint32_t score);
 void lcd_print_pong_score(uint8_t score_1, uint8_t score_2, uint8_t pos);
 void lcd_print_tetris_score(uint32_t score, uint8_t i);
+void lcd_print_snake_score(uint32_t score, uint8_t i);
 
 static void inline lcd_char(char val) {
     lcd_send_byte(val, LCD_CHARACTER);
