@@ -89,5 +89,7 @@ uint8_t read_reg(uint8_t game);
 void save_pong_score(uint8_t score_1, uint8_t score_2);
 void set_pong_score(uint32_t *reg, uint8_t val, uint8_t pos);
 uint8_t get_pong_score(uint8_t n);
+void save_tetris_score(uint32_t score);
+uint32_t get_tetris_score(uint8_t n);
 
 #endif /* INC_MENU_H_ */

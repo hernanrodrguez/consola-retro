@@ -264,6 +264,25 @@ void lcd_print_score(uint8_t score_1, uint8_t score_2){
 	lcd_char(print_num);
 }
 
+void lcd_print_tetris_score(uint32_t score, uint8_t i){
+	char print_num;
+
+	print_num = ((score/100)%10)+'0';
+	lcd_set_cursor(i, 3);
+	lcd_char(print_num);
+
+	print_num = ((score/10)%10)+'0';
+	lcd_set_cursor(i, 4);
+	lcd_char(print_num);
+
+	print_num = (score%10)+'0';
+	lcd_set_cursor(i, 5);
+	lcd_char(print_num);
+
+	lcd_set_cursor(i, 6);
+	lcd_char('0');
+}
+
 void lcd_print_pong_score(uint8_t score_1, uint8_t score_2, uint8_t pos) {
 	char print_num;
 	uint8_t x, y;

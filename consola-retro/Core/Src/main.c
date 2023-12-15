@@ -328,11 +328,11 @@ static void main_task(void *pvParameters){
 			}
 			break;
 		case STATE_GAME_1_RECORDS_SHOW:
-			if(lcd_progressive_print("  Puntajes Tetris   ",
+			if(lcd_progressive_print("                    ",
 									 "                    ",
 									 "                    ",
 									 "   Jugar    Volver  ",
-									 ONE_LINE)){
+									 FOUR_LINES)){
 				main_state = STATE_GAME_1_RECORDS_HANDLE;
 
 			}

@@ -501,7 +501,17 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 			switch(menu_gameover_handle()){
 			case 1: // guardar la partida
 
-				save_pong_score(score_1, score_2);
+				switch(game){
+				case 0:
+					save_pong_score(score_1, score_2);
+					break;
+				case 1:
+					save_tetris_score(score/10);
+					break;
+				case 2:
+					//save_snake_score(score);
+					break;
+				}
 
 				/*
 				// reiniciar la partida
@@ -855,6 +865,7 @@ uint8_t menu_records_handle (uint8_t game) {
 	static records_state_t records_state = STATE_RECORDS_SHOW;
 	uint8_t joystick, buzzer_data;
 	uint8_t score_1=0, score_2=0;
+	uint32_t score;
 
 	switch(records_state){
 	case STATE_RECORDS_SHOW:
@@ -864,6 +875,13 @@ uint8_t menu_records_handle (uint8_t game) {
 				score_1 = get_pong_score(i*2);
 				score_2 = get_pong_score((i*2)+1);
 				lcd_print_pong_score(score_1, score_2, i);
+				records_state = STATE_RECORDS_PLAY;
+			}
+			break;
+		case 1:
+			for (uint8_t i=0; i<3; i++) {
+				score = get_tetris_score(i);
+				lcd_print_tetris_score(score, i);
 				records_state = STATE_RECORDS_PLAY;
 			}
 			break;
@@ -954,6 +972,31 @@ void menu_blink(uint8_t option, const char *text){
 	}
 }
 
+void save_tetris_score(uint32_t score){
+	uint32_t reg;
+	uint32_t new_val;
+
+	new_val = (uint32_t)score & 0x3FF;
+	reg = HAL_RTCEx_BKUPRead(&hrtc, 3);
+
+	reg = (reg <<10) | (new_val & 0x3FF);
+	HAL_RTCEx_BKUPWrite(&hrtc, 3, reg);
+}
+
+uint32_t get_tetris_score(uint8_t n) {
+    if (n < 0 || n > 9) {
+        return 0;
+    }
+
+    uint32_t reg;
+	reg = HAL_RTCEx_BKUPRead(&hrtc, 3);
+
+    reg >>= (n * 10);
+    uint8_t ret = reg & 0x3FF;
+
+    return ret;
+}
+
 void save_pong_score(uint8_t score_1, uint8_t score_2) {
 	uint32_t reg;
 	uint32_t new_val;
@@ -962,11 +1005,6 @@ void save_pong_score(uint8_t score_1, uint8_t score_2) {
 	reg = HAL_RTCEx_BKUPRead(&hrtc, 1);
 
 	reg = (reg << 6) | (new_val & 0x3F);
-
-	//set_pong_score(&reg, score_1, 0);
-	//HAL_RTCEx_BKUPWrite(&hrtc, 1, reg);
-
-	//set_pong_score(&reg, score_2, 1);
 	HAL_RTCEx_BKUPWrite(&hrtc, 1, reg);
 }
 
