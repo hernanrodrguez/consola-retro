@@ -32,11 +32,11 @@ void pong_init(void){
 
 	player_1.x = 0;
 	player_1.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 8;
-	player_1.score = 0;
+	player_1.score = 0; // 0;
 
 	player_2.x = PONG_BOARD_WIDTH;
 	player_2.y = (PONG_BOARD_HEIGHT-PADDLE_1_LENGTH)/2 + 8;
-	player_2.score = 0;
+	player_2.score = 0; // 0;
 
 	regen_ball();
 

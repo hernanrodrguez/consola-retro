@@ -479,7 +479,7 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 			lcd_print(text,
 					  " Partida finalizada ",
 					  "   P1:00     P2:00  ",
-					  " Reiniciar   Salir  ");
+					  "  Guardar    Salir  ");
 			lcd_print_score(score_1, score_2);
 			game_play = STATE_GAMEOVER_HANDLE;
 			break;
@@ -487,19 +487,24 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 			lcd_print(text,
 					  "  Felicitaciones!   ",
 					  " Ganaste la partida!",
-					  " Reiniciar   Salir  ");
+					  "  Guardar    Salir  ");
 			game_play = STATE_GAMEOVER_HANDLE;
 			break;
 		case STATE_GAMEOVER_LOST_SHOW:
 			lcd_print(text,
 					  "   Buen intento!    ",
 					  " Segui participando ",
-					  " Reiniciar   Salir  ");
+					  "  Guardar    Salir  ");
 			game_play = STATE_GAMEOVER_HANDLE;
 			break;
 		case STATE_GAMEOVER_HANDLE:
 			switch(menu_gameover_handle()){
-			case 1: // volver a jugar
+			case 1: // guardar la partida
+
+				save_pong_score(score_1, score_2);
+
+				/*
+				// reiniciar la partida
 				RESET_GAME_STATE();
 				game_data = GAME_RESET;
 				xQueueSendToBack(game_queue, &game_data, portMAX_DELAY);
@@ -511,8 +516,9 @@ uint8_t menu_game_play(uint8_t game, const char* text){
 					MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, CONWAY_MSG);
 					MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 					return 2; // reiniciar hace que vuelvas a elegir el patron
-				}
-				break;
+				}*/
+				// COMENTADO PARA QUE SE VAYA!!!
+				//break;
 			case 2: // salir
 				RESET_GAME_STATE();
 
@@ -539,10 +545,10 @@ uint8_t menu_gameover_handle(void){
 
 	switch(gameover_state){
 	case STATE_RESET:
-		menu_blink(2, " Reiniciar");
+		menu_blink(2, "  Guardar ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
 			BUZZER_TONE();
-			menu_blink_option(2, " Reiniciar");
+			menu_blink_option(2, "  Guardar ");
 			if(joystick == JOYSTICK_1_PULS){
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
 				gameover_state = STATE_RESET;
@@ -841,18 +847,27 @@ uint8_t menu_rules_handle (uint8_t game) {
 
 uint8_t menu_records_handle (uint8_t game) {
 	typedef enum{
+		STATE_RECORDS_SHOW,
 		STATE_RECORDS_PLAY,
 		STATE_RECORDS_BACK
 	}records_state_t;
 
-	static records_state_t records_state = STATE_RECORDS_PLAY;
+	static records_state_t records_state = STATE_RECORDS_SHOW;
 	uint8_t joystick, buzzer_data;
-
-	if(read_reg(game) == 0) {
-		records_state = STATE_RECORDS_BACK;
-	}
+	uint8_t score_1=0, score_2=0;
 
 	switch(records_state){
+	case STATE_RECORDS_SHOW:
+		switch(game){
+		case 0:
+			for (uint8_t i=0; i<5; i++) {
+				score_1 = get_pong_score(i*2);
+				score_2 = get_pong_score((i*2)+1);
+				lcd_print_pong_score(score_1, score_2, i);
+				records_state = STATE_RECORDS_PLAY;
+			}
+			break;
+		}
 	case STATE_RECORDS_PLAY:
 		menu_blink(2, "   Jugar  ");
 		if(pdTRUE == xQueueReceive(joysticks_queue, &joystick, 0)){
@@ -861,8 +876,8 @@ uint8_t menu_records_handle (uint8_t game) {
 			switch(joystick){
 			case JOYSTICK_1_PULS:
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
-				records_state = STATE_RECORDS_PLAY;
-				return STATE_RECORDS_PLAY+1;
+				records_state = STATE_RECORDS_SHOW;
+				return STATE_RECORDS_PLAY;
 				break;
 			case JOYSTICK_1_RIGHT:
 				records_state = STATE_RECORDS_BACK;
@@ -878,8 +893,8 @@ uint8_t menu_records_handle (uint8_t game) {
 			switch(joystick){
 			case JOYSTICK_1_PULS:
 				xQueueReceive(joysticks_queue, &joystick, 0); // por si hay un espurio
-				records_state = STATE_RECORDS_PLAY;
-				return STATE_RECORDS_BACK+1;
+				records_state = STATE_RECORDS_SHOW;
+				return STATE_RECORDS_BACK;
 				break;
 			case JOYSTICK_1_LEFT:
 				records_state = STATE_RECORDS_PLAY;
@@ -937,6 +952,44 @@ void menu_blink(uint8_t option, const char *text){
 		}
 		break;
 	}
+}
+
+void save_pong_score(uint8_t score_1, uint8_t score_2) {
+	uint32_t reg;
+	uint32_t new_val;
+
+	new_val = ((uint32_t)score_1 & 0x07) | (((uint32_t)score_2 & 0x07) << 3);
+	reg = HAL_RTCEx_BKUPRead(&hrtc, 1);
+
+	reg = (reg << 6) | (new_val & 0x3F);
+
+	//set_pong_score(&reg, score_1, 0);
+	//HAL_RTCEx_BKUPWrite(&hrtc, 1, reg);
+
+	//set_pong_score(&reg, score_2, 1);
+	HAL_RTCEx_BKUPWrite(&hrtc, 1, reg);
+}
+
+void set_pong_score(uint32_t *reg, uint8_t val, uint8_t pos) {
+    if (pos < 0 || pos > 9) {
+        return;
+    }
+    *reg &= ~(0x07 << (pos * 3));
+    *reg |= (val & 0x07) << (pos * 3);
+}
+
+uint8_t get_pong_score(uint8_t n) {
+    if (n < 0 || n > 9) {
+        return 0;
+    }
+
+    uint32_t reg;
+	reg = HAL_RTCEx_BKUPRead(&hrtc, 1);
+
+    reg >>= (n * 3);
+    uint8_t ret = reg & 0x07;
+
+    return ret;
 }
 
 void save_reg(uint8_t game, uint8_t val_1, uint8_t val_2){

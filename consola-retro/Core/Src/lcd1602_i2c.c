@@ -264,6 +264,57 @@ void lcd_print_score(uint8_t score_1, uint8_t score_2){
 	lcd_char(print_num);
 }
 
+void lcd_print_pong_score(uint8_t score_1, uint8_t score_2, uint8_t pos) {
+	char print_num;
+	uint8_t x, y;
+
+	switch(pos){
+	case 0:
+		x=0;
+		y=0;
+		break;
+	case 1:
+		x=10;
+		y=0;
+		break;
+	case 2:
+		x=0;
+		y=1;
+		break;
+	case 3:
+		x=10;
+		y=1;
+		break;
+	case 4:
+		x=0;
+		y=2;
+		break;
+	case 5:
+		x=10;
+		y=2;
+		break;
+	}
+
+	print_num = ((score_1/10)%10)+'0';
+	lcd_set_cursor(y, x+2);
+	lcd_char(print_num);
+
+	print_num = (score_1%10)+'0';
+	lcd_set_cursor(y, x+3);
+	lcd_char(print_num);
+
+	lcd_set_cursor(y, x+4);
+	lcd_char('-');
+
+	print_num = ((score_2/10)%10)+'0';
+	lcd_set_cursor(y, x+5);
+	lcd_char(print_num);
+
+	print_num = (score_2%10)+'0';
+	lcd_set_cursor(y, x+6);
+	lcd_char(print_num);
+}
+
 void lcd_print_pts_lives(uint32_t score, uint8_t lives){
 	char print_num;
 

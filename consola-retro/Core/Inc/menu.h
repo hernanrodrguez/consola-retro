@@ -86,5 +86,8 @@ void menu_blink(uint8_t option, const char *text);
 void menu_blink_option(uint8_t option, const char *text);
 void save_reg(uint8_t game, uint8_t val_1, uint8_t val_2);
 uint8_t read_reg(uint8_t game);
+void save_pong_score(uint8_t score_1, uint8_t score_2);
+void set_pong_score(uint32_t *reg, uint8_t val, uint8_t pos);
+uint8_t get_pong_score(uint8_t n);
 
 #endif /* INC_MENU_H_ */

@@ -97,6 +97,7 @@ void lcd_print(const char *line0, const char *line1, const char *line2, const ch
 void lcd_print_score(uint8_t score_1, uint8_t score_2);
 void lcd_print_pts_lives(uint32_t score, uint8_t lives);
 void lcd_print_pts(uint32_t score);
+void lcd_print_pong_score(uint8_t score_1, uint8_t score_2, uint8_t pos);
 
 static void inline lcd_char(char val) {
     lcd_send_byte(val, LCD_CHARACTER);

@@ -253,11 +253,11 @@ static void main_task(void *pvParameters){
 			}
 			break;
 			case STATE_GAME_0_RECORDS_SHOW:
-				if(lcd_progressive_print("   Puntajes Pong    ",
+				if(lcd_progressive_print("                    ",
 										 "                    ",
 										 "                    ",
 										 "   Jugar    Volver  ",
-										 ONE_LINE)){
+										 FOUR_LINES)){
 					main_state = STATE_GAME_0_RECORDS_HANDLE;
 
 				}
@@ -641,10 +641,17 @@ int main(void)
   MATRIX_print_msg(MATRIX_DISPLAY_UNIT1, WELCOME_MSG);
   MATRIX_clear_buffer(MATRIX_DISPLAY_UNIT1);
 
-  save_reg(0,0,0);
-  save_reg(1,1,1);
-  save_reg(2,2,2);
-  save_reg(3,3,3);
+  /*HAL_RTCEx_BKUPWrite(&hrtc, 0, 0xFFFFFFFF);
+  HAL_RTCEx_BKUPWrite(&hrtc, 1, 0xFFFFFFFF);
+  HAL_RTCEx_BKUPWrite(&hrtc, 2, 0xFFFFFFFF);
+  HAL_RTCEx_BKUPWrite(&hrtc, 3, 0xFFFFFFFF);
+  HAL_RTCEx_BKUPWrite(&hrtc, 4, 0xFFFFFFFF);
+  HAL_RTCEx_BKUPWrite(&hrtc, 5, 0xFFFFFFFF);
+  HAL_RTCEx_BKUPWrite(&hrtc, 6, 0xFFFFFFFF);
+  HAL_RTCEx_BKUPWrite(&hrtc, 7, 0xFFFFFFFF);
+  HAL_RTCEx_BKUPWrite(&hrtc, 8, 0xFFFFFFFF);
+  HAL_RTCEx_BKUPWrite(&hrtc, 9, 0xFFFFFFFF);*/
+
 
   xTaskCreate(main_task,
 			  "main_task",
@@ -660,12 +667,12 @@ int main(void)
 			  1,
 			  NULL);
 
-  xTaskCreate(buzzer_task,
+/*  xTaskCreate(buzzer_task,
 			  "buzzer_task",
 			  configMINIMAL_STACK_SIZE,
 			  NULL,
 			  1,
-			  NULL);
+			  NULL);*/
 
   vTaskStartScheduler();
 
