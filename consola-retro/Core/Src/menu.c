@@ -879,14 +879,14 @@ uint8_t menu_records_handle (uint8_t game) {
 			}
 			break;
 		case 1:
-			for (uint8_t i=0; i<3; i++) {
+			for (uint8_t i=0; i<6; i++) {
 				score = get_tetris_score(i);
 				lcd_print_tetris_score(score, i);
 				records_state = STATE_RECORDS_PLAY;
 			}
 			break;
 		case 2:
-			for (uint8_t i=0; i<4; i++) {
+			for (uint8_t i=0; i<9; i++) {
 				score = get_snake_score(i);
 				lcd_print_snake_score(score, i);
 				records_state = STATE_RECORDS_PLAY;
@@ -980,14 +980,20 @@ void menu_blink(uint8_t option, const char *text){
 }
 
 void save_snake_score(uint32_t score){
-	uint32_t reg;
-	uint32_t new_val;
+	uint64_t reg;
+	uint64_t new_val;
 
 	new_val = (uint32_t)score & 0x7F;
-	reg = HAL_RTCEx_BKUPRead(&hrtc, 7);
+	reg =  HAL_RTCEx_BKUPRead(&hrtc, 7) |
+		  (HAL_RTCEx_BKUPRead(&hrtc, 8) << 16) |
+		  ((uint64_t) HAL_RTCEx_BKUPRead(&hrtc, 9) << 32) |
+		  ((uint64_t) HAL_RTCEx_BKUPRead(&hrtc, 10) << 48);
 
-	reg = (reg <<7) | (new_val & 0x7F);
-	HAL_RTCEx_BKUPWrite(&hrtc, 7, reg);
+	reg = (reg << 7) | (new_val & 0x7F);
+	HAL_RTCEx_BKUPWrite(&hrtc, 7, (reg & 0xFFFF));
+	HAL_RTCEx_BKUPWrite(&hrtc, 8, ((reg >> 16) & 0xFFFF));
+	HAL_RTCEx_BKUPWrite(&hrtc, 9, ((reg >> 32) & 0xFFFF));
+	HAL_RTCEx_BKUPWrite(&hrtc, 10, ((reg >> 48) & 0xFFFF));
 }
 
 uint32_t get_snake_score(uint8_t n) {
@@ -995,8 +1001,12 @@ uint32_t get_snake_score(uint8_t n) {
         return 0;
     }
 
-    uint32_t reg;
-	reg = HAL_RTCEx_BKUPRead(&hrtc, 7);
+    uint64_t reg;
+
+	reg =  HAL_RTCEx_BKUPRead(&hrtc, 7) |
+		  (HAL_RTCEx_BKUPRead(&hrtc, 8) << 16) |
+		  ((uint64_t) HAL_RTCEx_BKUPRead(&hrtc, 9) << 32) |
+		  ((uint64_t) HAL_RTCEx_BKUPRead(&hrtc, 10) << 48);
 
     reg >>= (n * 7);
     uint8_t ret = reg & 0x7F;
@@ -1005,14 +1015,22 @@ uint32_t get_snake_score(uint8_t n) {
 }
 
 void save_tetris_score(uint32_t score){
-	uint32_t reg;
-	uint32_t new_val;
+	uint64_t reg;
+	uint64_t new_val;
 
-	new_val = (uint32_t)score & 0x3FF;
-	reg = HAL_RTCEx_BKUPRead(&hrtc, 3);
+	new_val = (uint64_t)score & 0x3FF;
 
-	reg = (reg <<10) | (new_val & 0x3FF);
-	HAL_RTCEx_BKUPWrite(&hrtc, 3, reg);
+	reg =  HAL_RTCEx_BKUPRead(&hrtc, 3) |
+		  (HAL_RTCEx_BKUPRead(&hrtc, 4) << 16) |
+		  ((uint64_t) HAL_RTCEx_BKUPRead(&hrtc, 5) << 32) |
+		  ((uint64_t) HAL_RTCEx_BKUPRead(&hrtc, 6) << 48);
+
+	reg = (reg << 10) | (new_val & 0x3FF);
+	HAL_RTCEx_BKUPWrite(&hrtc, 3, (reg & 0xFFFF));
+	HAL_RTCEx_BKUPWrite(&hrtc, 4, ((reg >> 16) & 0xFFFF));
+	HAL_RTCEx_BKUPWrite(&hrtc, 5, ((reg >> 32) & 0xFFFF));
+	HAL_RTCEx_BKUPWrite(&hrtc, 6, ((reg >> 48) & 0xFFFF));
+
 }
 
 uint32_t get_tetris_score(uint8_t n) {
@@ -1020,8 +1038,12 @@ uint32_t get_tetris_score(uint8_t n) {
         return 0;
     }
 
-    uint32_t reg;
-	reg = HAL_RTCEx_BKUPRead(&hrtc, 3);
+    uint64_t reg;
+
+	reg =  HAL_RTCEx_BKUPRead(&hrtc, 3) |
+		  (HAL_RTCEx_BKUPRead(&hrtc, 4) << 16) |
+		  ((uint64_t) HAL_RTCEx_BKUPRead(&hrtc, 5) << 32) |
+		  ((uint64_t) HAL_RTCEx_BKUPRead(&hrtc, 6) << 48);
 
     reg >>= (n * 10);
     uint8_t ret = reg & 0x3FF;
@@ -1034,10 +1056,11 @@ void save_pong_score(uint8_t score_1, uint8_t score_2) {
 	uint32_t new_val;
 
 	new_val = ((uint32_t)score_1 & 0x07) | (((uint32_t)score_2 & 0x07) << 3);
-	reg = HAL_RTCEx_BKUPRead(&hrtc, 1);
+	reg = HAL_RTCEx_BKUPRead(&hrtc, 1) | (HAL_RTCEx_BKUPRead(&hrtc, 2) << 16);
 
 	reg = (reg << 6) | (new_val & 0x3F);
-	HAL_RTCEx_BKUPWrite(&hrtc, 1, reg);
+	HAL_RTCEx_BKUPWrite(&hrtc, 1, (reg & 0xFFFF));
+	HAL_RTCEx_BKUPWrite(&hrtc, 2, ((reg >> 16) & 0xFFFF));
 }
 
 void set_pong_score(uint32_t *reg, uint8_t val, uint8_t pos) {
@@ -1054,7 +1077,7 @@ uint8_t get_pong_score(uint8_t n) {
     }
 
     uint32_t reg;
-	reg = HAL_RTCEx_BKUPRead(&hrtc, 1);
+    reg = HAL_RTCEx_BKUPRead(&hrtc, 1) | (HAL_RTCEx_BKUPRead(&hrtc, 2) << 16);
 
     reg >>= (n * 3);
     uint8_t ret = reg & 0x07;

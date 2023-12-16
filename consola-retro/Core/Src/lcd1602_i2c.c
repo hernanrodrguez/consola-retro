@@ -264,34 +264,102 @@ void lcd_print_score(uint8_t score_1, uint8_t score_2){
 	lcd_char(print_num);
 }
 
-void lcd_print_tetris_score(uint32_t score, uint8_t i){
+void lcd_print_tetris_score(uint32_t score, uint8_t pos){
 	char print_num;
+	uint8_t x, y;
+
+	switch(pos){
+	case 0:
+		x=4;
+		y=0;
+		break;
+	case 1:
+		x=12;
+		y=0;
+		break;
+	case 2:
+		x=4;
+		y=1;
+		break;
+	case 3:
+		x=12;
+		y=1;
+		break;
+	case 4:
+		x=4;
+		y=2;
+		break;
+	case 5:
+		x=12;
+		y=2;
+		break;
+	}
 
 	print_num = ((score/100)%10)+'0';
-	lcd_set_cursor(i, 3);
+	lcd_set_cursor(y, x);
 	lcd_char(print_num);
 
 	print_num = ((score/10)%10)+'0';
-	lcd_set_cursor(i, 4);
+	lcd_set_cursor(y, x+1);
 	lcd_char(print_num);
 
 	print_num = (score%10)+'0';
-	lcd_set_cursor(i, 5);
+	lcd_set_cursor(y, x+2);
 	lcd_char(print_num);
 
-	lcd_set_cursor(i, 6);
+	lcd_set_cursor(y, x+3);
 	lcd_char('0');
 }
 
-void lcd_print_snake_score(uint32_t score, uint8_t i){
+void lcd_print_snake_score(uint32_t score, uint8_t pos){
 	char print_num;
+	uint8_t x, y;
+
+	switch(pos){
+	case 0:
+		x=3;
+		y=0;
+		break;
+	case 1:
+		x=9;
+		y=0;
+		break;
+	case 2:
+		x=15;
+		y=0;
+		break;
+	case 3:
+		x=3;
+		y=1;
+		break;
+	case 4:
+		x=9;
+		y=1;
+		break;
+	case 5:
+		x=15;
+		y=1;
+		break;
+	case 6:
+		x=3;
+		y=2;
+		break;
+	case 7:
+		x=9;
+		y=2;
+		break;
+	case 8:
+		x=15;
+		y=2;
+		break;
+	}
 
 	print_num = ((score/10)%10)+'0';
-	lcd_set_cursor(i, 4);
+	lcd_set_cursor(y, x);
 	lcd_char(print_num);
 
 	print_num = (score%10)+'0';
-	lcd_set_cursor(i, 5);
+	lcd_set_cursor(y, x+1);
 	lcd_char(print_num);
 
 }
@@ -302,26 +370,22 @@ void lcd_print_pong_score(uint8_t score_1, uint8_t score_2, uint8_t pos) {
 
 	switch(pos){
 	case 0:
-		x=0;
+		x=5;
 		y=0;
 		break;
 	case 1:
-		x=10;
-		y=0;
+		x=0;
+		y=1;
 		break;
 	case 2:
-		x=0;
+		x=10;
 		y=1;
 		break;
 	case 3:
-		x=10;
-		y=1;
-		break;
-	case 4:
 		x=0;
 		y=2;
 		break;
-	case 5:
+	case 4:
 		x=10;
 		y=2;
 		break;
